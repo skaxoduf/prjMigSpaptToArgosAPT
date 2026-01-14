@@ -1,0 +1,570 @@
+﻿Imports System.IO
+Imports System.Runtime.InteropServices
+Imports System.Text
+
+Public Class Form1
+    ' INI 파일 읽기를 위한 Win32 API
+    <DllImport("kernel32")>
+    Private Shared Function GetPrivateProfileString(ByVal section As String, ByVal key As String, ByVal def As String, ByVal retVal As StringBuilder, ByVal size As Integer, ByVal filePath As String) As Integer
+    End Function
+
+    Private _dbHelper As DBHelper
+    Private _iniPath As String = Application.StartupPath & "\setting.ini"
+
+    ' 설정값 변수 (회사 정보는 ComboBox에서 선택)
+    Private _targetDbName As String = ""
+    Private _sourceDbName As String = ""
+
+    ' 2026-01-12 10:45:00 Source DB 조회를 위한 헬퍼 추가
+    Private _sourceHelper As DBHelper
+
+    ' (DataViewer 버튼 및 관련 변수 제거)
+    ' Private WithEvents btnDataViewer As New Button() -> Layout 변경으로 제거됨
+
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' 콤보박스 초기화 (LoadCompanyList에서 설정하므로 여기서는 제거)
+
+        ' 2026-01-12 11:50:00 테마 강제 적용 (Tokyo Night)
+        ThemeManager.SetTheme(ThemeManager.AppTheme.TokyoNight)
+        ThemeManager.ApplyTheme(Me)
+
+        Log("프로그램 시작... 설정 파일 로드 중")
+        LoadSettings()
+
+        ' 2026-01-12 11:00:00 동/호 리스트 초기화는 DB 연결 후 진행
+        cboLimit.SelectedIndex = 1 ' Default 100
+    End Sub
+
+    ' (DataViewer 관련 버튼 로직 제거)
+
+    Private Sub LoadSettings()
+        If Not File.Exists(_iniPath) Then
+            Log("Error: setting.ini 파일을 찾을 수 없습니다.")
+            Return
+        End If
+
+        Try
+            ' [CONFIG] (회사 정보는 DB 조회로 변경되어 주석/제거)
+            ' _companyIdx = Convert.ToInt32(ReadIni("CONFIG", "CompanyIdx", "0"))
+            ' _companyCode = ReadIni("CONFIG", "CompanyCode", "")
+
+            ' [DB]
+            Dim serverIp As String = ReadIni("DB", "ServerIP", "")
+            Dim userId As String = ReadIni("DB", "UserID", "")
+            Dim password As String = ReadIni("DB", "Password", "")
+            _targetDbName = ReadIni("DB", "TargetDB", "")
+            _sourceDbName = ReadIni("DB", "SourceDB", "")
+
+            ' DBHelper 초기화 (Target DB에 접속)
+            _dbHelper = New DBHelper(serverIp, _targetDbName, userId, password)
+            ' Source DB Helper 초기화
+            _sourceHelper = New DBHelper(serverIp, _sourceDbName, userId, password)
+
+            Log("설정 로드 완료.")
+            Log(String.Format("Target DB: {0}, Source DB: {1}", _targetDbName, _sourceDbName))
+
+            ' 접속 테스트 및 회사 목록 로드
+            If _dbHelper.TestConnection() Then
+                Log("DB 접속 성공!")
+                LoadCompanyList()
+
+                ' 2026-01-12 11:00:00 Source DB 기반 조회 조건 초기화 (동 리스트)
+                LoadDongList()
+            Else
+                Log("Error: DB 접속 실패. 설정을 확인하세요.")
+                btnMigrateMember.Enabled = False
+            End If
+            ' (2026-01-09 13:10:00 코드 끝)
+
+        Catch ex As Exception
+            Log("설정 로드 중 오류: " & ex.Message)
+        End Try
+    End Sub
+
+
+
+    ' 회사 목록 로드 함수 (2026-01-09 13:35:00 코드 시작)
+    Private Sub LoadCompanyList()
+        Try
+            Dim dt As DataTable = _dbHelper.GetCompanyList()
+
+            ' 표시용 컬럼 추가
+            dt.Columns.Add("DisplayCol", GetType(String), "'[IDX: ' + F_IDX + '] [CODE: ' + F_COMPANY_CODE + '] ' + F_COMPANY_NAME + ' (회원수: ' + F_MEM_COUNT + '명)'")
+
+            cboCompany.DataSource = dt
+            cboCompany.DisplayMember = "DisplayCol"
+            cboCompany.ValueMember = "F_IDX"
+
+            If dt.Rows.Count > 0 Then
+                cboCompany.SelectedIndex = 0
+                btnMigrateMember.Enabled = True
+                Log("회사 목록 로드 완료: " & dt.Rows.Count & "개")
+            Else
+                Log("Error: 등록된 회사(T_COMPANY)가 없습니다.")
+                btnMigrateMember.Enabled = False
+            End If
+        Catch ex As Exception
+            Log("회사 목록 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+    ' (2026-01-09 13:35:00 코드 끝)
+
+    Private Sub btnMigrateMember_Click(sender As Object, e As EventArgs) Handles btnMigrateMember.Click
+        ' 1. 기본 유효성 검사 (회사 선택)
+        If cboCompany.SelectedValue Is Nothing Then
+            FrmMessage.ShowMsg("이관할 회사를 선택해주세요.", "알림")
+            Return
+        End If
+
+        ' 2. DB 설정 유효성 검사
+        If String.IsNullOrWhiteSpace(_targetDbName) Then
+            FrmMessage.ShowMsg("Target DB가 설정되지 않았습니다. 환경설정을 확인해주세요.", "경고")
+            Return
+        End If
+
+        If String.IsNullOrWhiteSpace(_sourceDbName) Then
+            FrmMessage.ShowMsg("Source DB가 설정되지 않았습니다. 환경설정을 확인해주세요.", "경고")
+            Return
+        End If
+
+        If FrmMessage.ShowMsg("선택된 회사로 회원 이관을 시작하시겠습니까?", "확인", MessageBoxButtons.YesNo) = DialogResult.Yes Then
+            Log("=== 회원 이관 시작 ===")
+
+            ' 선택된 회사 정보 가져오기
+            Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+            Dim selCompanyIdx = Convert.ToInt32(drv("F_IDX"))
+            Dim selCompanyCode = drv("F_COMPANY_CODE").ToString
+
+            Log(String.Format("검증 완료. 시작: Target={0}, Source={1}", _targetDbName, _sourceDbName))
+            Log(String.Format("대상: {0} (IDX:{1})", drv("F_COMPANY_NAME"), selCompanyIdx))
+
+            Try
+                ' 1. 동/호 정보 이관 (2026-01-09 추가)
+                Log(">>> [1/2] 동/호 정보(Master) 이관 시작...")
+                Dim resultDong = _dbHelper.ExecuteMigrationSP("USP_MIG_DONG_HO", _sourceDbName, selCompanyIdx, selCompanyCode)
+                Log("동/호 이관 결과: " & resultDong)
+
+                ' 2. 회원 정보 이관
+                Log(">>> [2/2] 회원 정보(Member) 이관 시작...")
+                Dim resultMem = _dbHelper.ExecuteMigrationSP("USP_MIG_MEMBER_TO_MEM", _sourceDbName, selCompanyIdx, selCompanyCode)
+                Log("회원 이관 결과: " & resultMem)
+
+            Catch ex As Exception
+                Log("실행 중 오류 발생: " & ex.Message)
+            End Try
+
+            Log("=== 작업 종료 ===")
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' 로그 출력 함수
+    ''' </summary>
+    ''' <summary>
+    ''' 로그 출력 함수 (화면 출력 + 파일 저장)
+    ''' </summary>
+    Private Sub Log(msg As String)
+        ' 화면 출력
+        rtbLog.AppendText(String.Format("[{0}] {1}{2}", DateTime.Now.ToString("HH:mm:ss"), msg, Environment.NewLine))
+        rtbLog.ScrollToCaret()
+
+        ' 파일 저장
+        Logger.WriteLog(msg)
+    End Sub
+
+    Private Function ReadIni(section As String, key As String, def As String) As String
+        Dim sb As New StringBuilder(255)
+        GetPrivateProfileString(section, key, def, sb, 255, _iniPath)
+        Return sb.ToString()
+    End Function
+
+    Private Sub btnSetting_Click(sender As Object, e As EventArgs) Handles btnSetting.Click
+        ' 환경설정 버튼 클릭 이벤트 (2026-01-09 12:55:00 코드 시작)
+        Dim frm As New FormSetting
+        If frm.ShowDialog = DialogResult.OK Then
+            Log("설정이 변경되었습니다. 설정을 다시 로드합니다.")
+            LoadSettings()
+            ' LoadAppTheme() ' 테마 변경 기능 제거 (Tokyo Night 고정)
+        End If
+        ' (2026-01-09 12:55:00 코드 끝)
+    End Sub
+    ' 2026-01-12 11:00:00 동 리스트 로드 (Source DB 기준)
+    Private Sub LoadDongList()
+        If _sourceHelper Is Nothing Then Return
+
+        Try
+            Dim query As String = "SELECT DISTINCT DongAddr FROM t_aptgb1 ORDER BY DongAddr"
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+
+            cboSearchDong.Items.Clear()
+            cboSearchDong.Items.Add("전체")
+            For Each row As DataRow In dt.Rows
+                cboSearchDong.Items.Add(row("DongAddr").ToString())
+            Next
+            cboSearchDong.SelectedIndex = 0
+
+        Catch ex As Exception
+            Log("동 리스트 로드 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub cboSearchDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboSearchDong.SelectedIndexChanged
+        If _sourceHelper Is Nothing OrElse cboSearchDong.SelectedItem Is Nothing Then Return
+
+        Dim selectedDong As String = cboSearchDong.SelectedItem.ToString()
+        If selectedDong = "전체" Then
+            cboSearchHo.Items.Clear()
+            cboSearchHo.Items.Add("전체")
+            cboSearchHo.SelectedIndex = 0
+            Return
+        End If
+
+        Try
+            ' 호 리스트 로드 (선택된 동 기준)
+            Dim query As String = String.Format("SELECT DISTINCT HoAddr FROM t_aptgb2 WHERE DongAddr = '{0}' ORDER BY HoAddr", selectedDong)
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+
+            cboSearchHo.Items.Clear()
+            cboSearchHo.Items.Add("전체")
+            For Each row As DataRow In dt.Rows
+                cboSearchHo.Items.Add(row("HoAddr").ToString())
+            Next
+            cboSearchHo.SelectedIndex = 0
+
+        Catch ex As Exception
+            Log("호 리스트 로드 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    ' 2026-01-12 11:10:00 통합 조회 버튼 클릭 이벤트
+    Private Sub btnSearch_Click(sender As Object, e As EventArgs) Handles btnSearch.Click
+        _currentPage = 1
+        UpdateSearch()
+    End Sub
+
+    ' 2026-01-12 13:20:00 그리드 이미지 오류 방지 (DataError 핸들러 추가)
+    Private Sub dgvSource_DataError(sender As Object, e As DataGridViewDataErrorEventArgs) Handles dgvSource.DataError
+        ' 이미지 렌더링 등에서 발생하는 오류 무시
+        e.ThrowException = False
+        e.Cancel = False
+    End Sub
+
+    Private Sub dgvTarget_DataError(sender As Object, e As DataGridViewDataErrorEventArgs) Handles dgvTarget.DataError
+        ' 이미지 렌더링 등에서 발생하는 오류 무시
+        e.ThrowException = False
+        e.Cancel = False
+    End Sub
+
+    ' 2026-01-12 15:50:00 TabControl Dark Theme Draw Implementation
+    Private Sub tabMain_DrawItem(sender As Object, e As DrawItemEventArgs) Handles tabMain.DrawItem
+        Dim tabs As TabControl = DirectCast(sender, TabControl)
+        Dim g As Graphics = e.Graphics
+        Dim r As Rectangle = e.Bounds
+
+        ' Tokyo Night Palette
+        Dim backColor As Color = Color.FromArgb(26, 27, 38)
+        Dim activeColor As Color = Color.FromArgb(65, 72, 104)
+        Dim foreColor As Color = Color.White
+        Dim inactiveFore As Color = Color.FromArgb(169, 177, 214)
+
+        ' Background Fill
+        g.FillRectangle(New SolidBrush(backColor), r)
+
+        ' Selection Highlight
+        If e.Index = tabs.SelectedIndex Then
+            g.FillRectangle(New SolidBrush(activeColor), r)
+            g.DrawString(tabs.TabPages(e.Index).Text, tabs.Font, New SolidBrush(foreColor), r.X + 10, r.Y + 6)
+        Else
+            g.DrawString(tabs.TabPages(e.Index).Text, tabs.Font, New SolidBrush(inactiveFore), r.X + 10, r.Y + 6)
+        End If
+    End Sub
+    ' 2026-01-12 16:16:00 Image Hover Preview
+    Private Sub dgvSource_CellMouseEnter(sender As Object, e As DataGridViewCellEventArgs) Handles dgvSource.CellMouseEnter
+        If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Return
+
+        Dim dgv As DataGridView = DirectCast(sender, DataGridView)
+        Dim colName As String = dgv.Columns(e.ColumnIndex).Name
+
+        If colName = "MbSajin" OrElse colName = "MbPhoto" Then
+            Dim cellVal = dgv.Rows(e.RowIndex).Cells(e.ColumnIndex).Value
+
+            If cellVal IsNot Nothing AndAlso TypeOf cellVal Is Byte() Then
+                Try
+                    Dim bytes As Byte() = DirectCast(cellVal, Byte())
+                    If bytes.Length > 0 Then
+                        Using ms As New MemoryStream(bytes)
+                            picPreview.Image = Image.FromStream(ms)
+                        End Using
+
+                        ' Position Preview near mouse
+                        Dim mousePos = Me.PointToClient(Cursor.Position)
+                        picPreview.Location = New Point(mousePos.X + 20, mousePos.Y + 20)
+
+                        ' Ensure it stays within form bounds
+                        If picPreview.Right > Me.ClientSize.Width Then
+                            picPreview.Left = mousePos.X - picPreview.Width - 20
+                        End If
+                        If picPreview.Bottom > Me.ClientSize.Height Then
+                            picPreview.Top = mousePos.Y - picPreview.Height - 20
+                        End If
+
+                        picPreview.Visible = True
+                        picPreview.BringToFront()
+                    End If
+                Catch ex As Exception
+                    ' Ignore invalid image data
+                End Try
+            End If
+        End If
+    End Sub
+
+    Private Sub dgvSource_CellMouseLeave(sender As Object, e As DataGridViewCellEventArgs) Handles dgvSource.CellMouseLeave
+        picPreview.Visible = False
+        picPreview.Image = Nothing
+    End Sub
+
+    ' 2026-01-12 16:35:00 Row Numbering Implementation
+    Private Sub dgv_RowPostPaint(sender As Object, e As DataGridViewRowPostPaintEventArgs) Handles dgvSource.RowPostPaint, dgvTarget.RowPostPaint
+        Dim dgv As DataGridView = DirectCast(sender, DataGridView)
+        Dim rowIdx As String = (e.RowIndex + 1).ToString()
+
+        ' Calculate the bounds for the row header
+        Dim headerBounds As Rectangle = New Rectangle(e.RowBounds.Left, e.RowBounds.Top, dgv.RowHeadersWidth, e.RowBounds.Height)
+
+        Using b As New SolidBrush(dgv.RowHeadersDefaultCellStyle.ForeColor)
+            Dim format As New StringFormat()
+            format.Alignment = StringAlignment.Center
+            format.LineAlignment = StringAlignment.Center
+            e.Graphics.DrawString(rowIdx, dgv.RowHeadersDefaultCellStyle.Font, b, headerBounds, format)
+        End Using
+    End Sub
+
+    ' 2026-01-12 16:35:00 Pagination Variables
+    Private _currentSourcePage As Integer = 1
+    Private _currentTargetPage As Integer = 1
+    Private _pageSize As Integer = 100
+
+    Private Sub cboLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLimit.SelectedIndexChanged
+        If cboLimit.SelectedItem IsNot Nothing Then
+            If Integer.TryParse(cboLimit.SelectedItem.ToString(), _pageSize) Then
+                _currentSourcePage = 1
+                _currentTargetPage = 1
+                UpdateSearch()
+            End If
+        End If
+    End Sub
+
+
+
+
+
+    ' 2026-01-12 16:40:00 Numbered Pagination Logic
+    ' 2026-01-12 16:40:00 Numbered Pagination Logic (Source)
+    Private Sub RenderSourcePagination(totalRows As Integer)
+        pnlSourcePagination.Controls.Clear()
+
+        Dim totalPages As Integer = Math.Ceiling(totalRows / _pageSize)
+        If totalPages = 0 Then totalPages = 1
+
+        Dim startPage As Integer = ((_currentSourcePage - 1) \ 10) * 10 + 1
+        Dim endPage As Integer = Math.Min(startPage + 9, totalPages)
+
+        ' [<] Prev Block Button
+        If startPage > 1 Then
+            Dim btn As New Button()
+            btn.Text = "<"
+            btn.Size = New Size(30, 30)
+            btn.Tag = startPage - 1
+            btn.FlatStyle = FlatStyle.Flat
+            btn.ForeColor = Color.White
+            btn.BackColor = Color.FromArgb(65, 72, 104)
+            AddHandler btn.Click, AddressOf SourcePageButton_Click
+            pnlSourcePagination.Controls.Add(btn)
+        End If
+
+        ' Numbered Buttons
+        For i As Integer = startPage To endPage
+            Dim btn As New Button()
+            btn.Text = i.ToString()
+            btn.Size = New Size(40, 30)
+            btn.Tag = i
+            btn.FlatStyle = FlatStyle.Flat
+
+            If i = _currentSourcePage Then
+                btn.ForeColor = Color.White
+                btn.BackColor = Color.FromArgb(122, 162, 247) ' Active Blue
+            Else
+                btn.ForeColor = Color.White
+                btn.BackColor = Color.Transparent
+            End If
+
+            AddHandler btn.Click, AddressOf SourcePageButton_Click
+            pnlSourcePagination.Controls.Add(btn)
+        Next
+
+        ' [>] Next Block Button
+        If endPage < totalPages Then
+            Dim btn As New Button()
+            btn.Text = ">"
+            btn.Size = New Size(30, 30)
+            btn.Tag = endPage + 1
+            btn.FlatStyle = FlatStyle.Flat
+            btn.ForeColor = Color.White
+            btn.BackColor = Color.FromArgb(65, 72, 104)
+            AddHandler btn.Click, AddressOf SourcePageButton_Click
+            pnlSourcePagination.Controls.Add(btn)
+        End If
+    End Sub
+
+    ' 2026-01-12 16:40:00 Numbered Pagination Logic (Target)
+    Private Sub RenderTargetPagination(totalRows As Integer)
+        pnlTargetPagination.Controls.Clear()
+
+        Dim totalPages As Integer = Math.Ceiling(totalRows / _pageSize)
+        If totalPages = 0 Then totalPages = 1
+
+        Dim startPage As Integer = ((_currentTargetPage - 1) \ 10) * 10 + 1
+        Dim endPage As Integer = Math.Min(startPage + 9, totalPages)
+
+        ' [<] Prev Block Button
+        If startPage > 1 Then
+            Dim btn As New Button()
+            btn.Text = "<"
+            btn.Size = New Size(30, 30)
+            btn.Tag = startPage - 1
+            btn.FlatStyle = FlatStyle.Flat
+            btn.ForeColor = Color.White
+            btn.BackColor = Color.FromArgb(65, 72, 104)
+            AddHandler btn.Click, AddressOf TargetPageButton_Click
+            pnlTargetPagination.Controls.Add(btn)
+        End If
+
+        ' Numbered Buttons
+        For i As Integer = startPage To endPage
+            Dim btn As New Button()
+            btn.Text = i.ToString()
+            btn.Size = New Size(40, 30)
+            btn.Tag = i
+            btn.FlatStyle = FlatStyle.Flat
+
+            If i = _currentTargetPage Then
+                btn.ForeColor = Color.White
+                btn.BackColor = Color.FromArgb(122, 162, 247) ' Active Blue
+            Else
+                btn.ForeColor = Color.White
+                btn.BackColor = Color.Transparent
+            End If
+
+            AddHandler btn.Click, AddressOf TargetPageButton_Click
+            pnlTargetPagination.Controls.Add(btn)
+        Next
+
+        ' [>] Next Block Button
+        If endPage < totalPages Then
+            Dim btn As New Button()
+            btn.Text = ">"
+            btn.Size = New Size(30, 30)
+            btn.Tag = endPage + 1
+            btn.FlatStyle = FlatStyle.Flat
+            btn.ForeColor = Color.White
+            btn.BackColor = Color.FromArgb(65, 72, 104)
+            AddHandler btn.Click, AddressOf TargetPageButton_Click
+            pnlTargetPagination.Controls.Add(btn)
+        End If
+    End Sub
+
+    Private Sub SourcePageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As Button = DirectCast(sender, Button)
+        _currentSourcePage = Convert.ToInt32(btn.Tag)
+        UpdateSearch()
+    End Sub
+
+    Private Sub TargetPageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As Button = DirectCast(sender, Button)
+        _currentTargetPage = Convert.ToInt32(btn.Tag)
+        UpdateSearch()
+    End Sub
+
+    ' Refactored Search Method for Pagination
+    Private Sub UpdateSearch()
+        If _sourceHelper Is Nothing OrElse _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+
+        Dim drv As DataRowView = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode As String = drv("F_COMPANY_CODE").ToString()
+
+        Dim nameKeyword As String = txtSearchName.Text.Trim()
+        Dim selectedDong As String = If(cboSearchDong.SelectedItem Is Nothing, "전체", cboSearchDong.SelectedItem.ToString())
+        Dim selectedHo As String = If(cboSearchHo.SelectedItem Is Nothing, "전체", cboSearchHo.SelectedItem.ToString())
+
+        ' Condition
+        Dim whereSource As New StringBuilder("WHERE 1=1 ")
+        Dim whereTarget As New StringBuilder("WHERE 1=1 ")
+
+        whereTarget.AppendFormat("AND F_COMPANY_CODE = '{0}' ", selCompanyCode)
+
+        If Not String.IsNullOrEmpty(nameKeyword) Then
+            whereSource.AppendFormat("AND MbName LIKE '%{0}%' ", nameKeyword)
+            whereTarget.AppendFormat("AND F_MEMNM LIKE '%{0}%' ", nameKeyword)
+        End If
+
+        If selectedDong <> "전체" Then
+            whereSource.AppendFormat("AND DongAddr = '{0}' ", selectedDong)
+            whereTarget.AppendFormat("AND F_DONG = '{0}' ", selectedDong)
+        End If
+
+        If selectedHo <> "전체" Then
+            whereSource.AppendFormat("AND HoAddr = '{0}' ", selectedHo)
+            whereTarget.AppendFormat("AND F_HO = '{0}' ", selectedHo)
+        End If
+
+        Try
+            ' 1. Get Total Count
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_Member " & whereSource.ToString()
+            Dim totalCount As Integer = 0
+
+            Dim dtCount = _sourceHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                totalCount = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+
+            ' 2. Pagination Query
+            Dim offset As Integer = (_currentPage - 1) * _pageSize
+
+            Dim sqlSource As String = String.Format("SELECT * FROM T_Member {0} ORDER BY MbNo OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereSource.ToString(), offset, _pageSize)
+            Dim sqlTarget As String = String.Format("SELECT * FROM T_MEM {0} ORDER BY F_IDX OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereTarget.ToString(), offset, _pageSize)
+
+            Dim dtSource As DataTable = _sourceHelper.ExecuteQuery(sqlSource)
+            dgvSource.DataSource = dtSource
+            grpSource.Text = String.Format("Old DB (Source) : Top {0} / Total {1}", dtSource.Rows.Count, totalCount)
+
+            Dim dtTarget As DataTable = _dbHelper.ExecuteQuery(sqlTarget)
+            dgvTarget.DataSource = dtTarget
+            grpTarget.Text = String.Format("New DB (Target) : Top {0}", dtTarget.Rows.Count)
+
+            ' 3. Render Bottom Pagination
+            RenderPagination(totalCount)
+
+        Catch ex As Exception
+            Log("Pagination Error (Make sure SQL Server is 2012+): " & ex.Message)
+
+            ' Fallback to TOP 100 if OFFSET fails (e.g. SQL 2008)
+            Try
+                Dim sqlSourceFB As String = "SELECT TOP 100 * FROM T_Member " & whereSource.ToString()
+                Dim dtSourceFB As DataTable = _sourceHelper.ExecuteQuery(sqlSourceFB)
+                dgvSource.DataSource = dtSourceFB
+                grpSource.Text = "Old DB (Source) : Top 100 (Fallback)"
+
+                Dim sqlTargetFB As String = "SELECT TOP 100 * FROM T_MEM " & whereTarget.ToString()
+                Dim dtTargetFB As DataTable = _dbHelper.ExecuteQuery(sqlTargetFB)
+                dgvTarget.DataSource = dtTargetFB
+                grpTarget.Text = "New DB (Target) : Top 100 (Fallback)"
+
+                MessageBox.Show("페이지 기능이 지원되지 않는 DB 버전입니다. (TOP 100 조회)", "알림")
+            Catch ex2 As Exception
+                Log("Fallback Search Error: " & ex2.Message)
+                MessageBox.Show("조회 중 오류가 발생했습니다: " & ex.Message, "오류")
+            End Try
+        End Try
+    End Sub
+
+End Class

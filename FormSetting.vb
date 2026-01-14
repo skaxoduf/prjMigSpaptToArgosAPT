@@ -14,16 +14,28 @@ Public Class FormSetting
 
     Private _iniPath As String = Application.StartupPath & "\setting.ini"
 
+    ' 2026-01-12 10:05:00 테마 선택을 위한 ComboBox 변수 추가 (Designer에서 추가했다고 가정하거나 동적 생성)
+    ' 실제 디자이너 파일 수정 없이 코드에서 동적으로 추가하여 처리
+    ' 2026-01-12 10:05:00 테마 선택 제거 (Tokyo Night 고정)
+    ' Private WithEvents cmbTheme As New ComboBox() 
+    ' Private lblTheme As New Label()
+
     Private Sub FormSetting_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        InitializeThemeControls()
         LoadSettings()
+    End Sub
+
+    Private Sub InitializeThemeControls()
     End Sub
 
     Private Sub LoadSettings()
         If Not File.Exists(_iniPath) Then Return
 
-        ' [CONFIG]
-        txtCompanyIdx.Text = ReadIni("CONFIG", "CompanyIdx", "")
-        txtCompanyCode.Text = ReadIni("CONFIG", "CompanyCode", "")
+        ' [THEME]
+        ' [THEME] - 제거됨
+        ' Dim savedTheme As String = ReadIni("CONFIG", "Theme", "Light")
+        ' cmbTheme.SelectedItem = savedTheme
+        ThemeManager.ApplyTheme(Me)
 
         ' [DB]
         txtServerIP.Text = ReadIni("DB", "ServerIP", "")
@@ -42,8 +54,10 @@ Public Class FormSetting
 
         Try
             ' [CONFIG]
-            WriteIni("CONFIG", "CompanyIdx", txtCompanyIdx.Text.Trim())
-            WriteIni("CONFIG", "CompanyCode", txtCompanyCode.Text.Trim())
+            ' WriteIni("CONFIG", "CompanyIdx", txtCompanyIdx.Text.Trim()) -> 제거
+            ' WriteIni("CONFIG", "CompanyCode", txtCompanyCode.Text.Trim()) -> 제거
+
+            ' Theme 저장 로직 제거
 
             ' [DB]
             WriteIni("DB", "ServerIP", txtServerIP.Text.Trim())

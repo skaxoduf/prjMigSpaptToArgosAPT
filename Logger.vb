@@ -10,7 +10,7 @@ Public Class Logger
                 Directory.CreateDirectory(_logDir)
             End If
 
-            Dim fileName As String = String.Format("Log_{0}.txt", DateTime.Now.ToString("yyyyMMdd"))
+            Dim fileName As String = String.Format("MigLog_{0}.Log", DateTime.Now.ToString("yyyyMMdd"))
             Dim filePath As String = Path.Combine(_logDir, fileName)
             Dim logContent As String = String.Format("[{0}] {1}{2}", DateTime.Now.ToString("HH:mm:ss"), msg, Environment.NewLine)
 
