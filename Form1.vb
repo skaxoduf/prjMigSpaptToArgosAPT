@@ -5,10 +5,11 @@ Imports System.Drawing.Drawing2D ' 추가: SmoothingMode 사용을 위해 필요
 Imports System.Data.OleDb ' 엑셀 읽기를 위해 추가
 
 Public Class Form1
-    ' INI 파일 읽기를 위한 Win32 API
-    <DllImport("kernel32")>
-    Private Shared Function GetPrivateProfileString(ByVal section As String, ByVal key As String, ByVal def As String, ByVal retVal As StringBuilder, ByVal size As Integer, ByVal filePath As String) As Integer
-    End Function
+    ' (2026-01-18) Win32 API 선언 제거 -> SettingsHelper로 이동
+
+
+
+
 
     Private _dbHelper As DBHelper
     Private _iniPath As String = Application.StartupPath & "\setting.ini"
@@ -20,8 +21,8 @@ Public Class Form1
     ' 2026-01-12 10:45:00 Source DB 조회를 위한 헬퍼 추가
     Private _sourceHelper As DBHelper
 
-    ' (DataViewer 버튼 및 관련 변수 제거)
-    ' Private WithEvents btnDataViewer As New Button() -> Layout 변경으로 제거됨
+    ' 2026-01-18 Setting Helper 추가
+    Private _settingsHelper As SettingsHelper
 
     ' 2026-01-13 초기화 완료 플래그
     Private _isLoaded As Boolean = False
@@ -32,9 +33,9 @@ Public Class Form1
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' 콤보박스 초기화 (LoadCompanyList에서 설정하므로 여기서는 제거)
 
-        ' 2026-01-12 11:50:00 테마 강제 적용 (Modern Bright)
-        ThemeManager.SetTheme(ThemeManager.AppTheme.ModernBright)
-        ThemeManager.ApplyTheme(Me)
+        ' 2026-01-12 (Removed) ThemeManager.SetTheme/ApplyTheme - Designer 제어를 위해 제거
+        ThemeManager.SetTheme(ThemeManager.AppTheme.TokyoNight) ' Enable Dark Theme for MessageBox
+        ' ThemeManager.ApplyTheme(Me) ' Form1 itself is styled by Designer, so skip applying to Me if needed, but SetTheme is crucial for other forms.
 
         Log("프로그램 시작... 설정 파일 로드 중")
         LoadSettings()
@@ -43,11 +44,16 @@ Public Class Form1
         cboLimit.SelectedIndex = 1 ' Default 100
         cboLimitTarget.SelectedIndex = 1 ' Default 100 for Target
 
-        ' 2026-01-13 Fix Z-Order to ensure Target Grid is visible
-        ' Docking Layout Order: Last in Z-Order (SendToBack) -> First in Z-Order (BringToFront)
-        ' We want pnlCenterAction (Top) to be processed FIRST (so it takes top space).
-        ' We want grpTarget (Fill) to be processed LAST (so it takes remaining space).
-        ' Therefore: pnlCenterAction -> SendToBack (High Index), grpTarget -> BringToFront (Index 0).
+        cboCourseLimit.SelectedIndex = 1 ' Default 100
+        cboCourseLimitTarget.SelectedIndex = 1 ' Default 100
+
+        ' 2026-01-16 강좌 탭 날짜 검색 초기화 (이번 달 1일 ~ 오늘)
+        dtpCourseStart.Value = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)
+        dtpCourseEnd.Value = DateTime.Now
+        txtCourseSourceSearchName.PlaceholderText = "회원명 검색"
+
+
+        ' 2026-01-13 (Changes) Layout Order
         pnlCenterAction.SendToBack()
         grpTarget.BringToFront()
 
@@ -55,58 +61,61 @@ Public Class Form1
         grpTarget.Visible = True
         pnlCenterAction.Visible = True
 
-        ' 2026-01-13 Customize Modern Buttons
-        CustomizeButtons()
+        ' 2026-01-18 Tokyo Night Style 적용
+        UiHelper.ApplyGridTheme(dgvSource)
+        UiHelper.ApplyGridTheme(dgvTarget)
+        UiHelper.ApplyGridTheme(dgvCourseSource)
+        UiHelper.ApplyGridTheme(dgvCourseTarget)
 
-        ' 2026-01-14 Init CircularProgressBar
-        _loadingBar = New CircularProgressBar()
-        _loadingBar.Size = New Size(250, 250)
-        _loadingBar.LineThickness = 20
-        _loadingBar.ProgressColor = Color.FromArgb(0, 122, 255) ' Blue
-        _loadingBar.TrackColor = Color.FromArgb(240, 240, 240) ' Light Gray
-        _loadingBar.ForeColor = Color.White ' Text Color
-        _loadingBar.Location = New Point((Me.Width - _loadingBar.Width) \ 2, (Me.Height - _loadingBar.Height) \ 2)
-        _loadingBar.Anchor = AnchorStyles.None ' Resize 시 중앙 유지
-        _loadingBar.Visible = False
-        Me.Controls.Add(_loadingBar)
-        _loadingBar.BringToFront()
+        ' 2026-01-18 GroupBox Title Color (Readability Fix)
+        grpCourseSource.ForeColor = Color.FromArgb(192, 202, 245) ' Tokyo Night Text
+        grpCourseTarget.ForeColor = Color.FromArgb(192, 202, 245)
+        grpSource.ForeColor = Color.FromArgb(192, 202, 245)
+        grpTarget.ForeColor = Color.FromArgb(192, 202, 245)
+
+
+        ' 2026-01-13 (Removed) CustomizeButtons - Designer 제어를 위해 제거
+        ' CustomizeButtons()
+
+        ' 2026-01-18 (Restored) _loadingBar - 동적 생성 복구 (사용자 요청)
+        ' Designer에 'loadingBar'가 없으면 코드로 생성
+        Dim foundCtl = Me.Controls.Find("loadingBar", True).FirstOrDefault()
+        If foundCtl Is Nothing Then foundCtl = Me.Controls.Find("CircularProgressBar1", True).FirstOrDefault()
+
+        If foundCtl IsNot Nothing AndAlso TypeOf foundCtl Is CircularProgressBar Then
+            _loadingBar = DirectCast(foundCtl, CircularProgressBar)
+            _loadingBar.Visible = False
+        Else
+            ' 동적 생성 (Tokyo Night Style)
+            _loadingBar = New CircularProgressBar()
+            _loadingBar.Name = "loadingBar"
+            _loadingBar.Size = New Size(150, 150)
+            _loadingBar.Location = New Point((Me.Width - _loadingBar.Width) \ 2, (Me.Height - _loadingBar.Height) \ 2)
+            _loadingBar.Anchor = AnchorStyles.None
+
+            ' Style
+            _loadingBar.ForeColor = Color.White
+            _loadingBar.TrackColor = Color.FromArgb(26, 27, 38) ' Background/Track
+            _loadingBar.ProgressColor = Color.FromArgb(122, 162, 247) ' Accent Blue
+            _loadingBar.LineThickness = 15
+            _loadingBar.Value = 0
+            _loadingBar.Maximum = 100
+
+            _loadingBar.Font = New Font("Segoe UI", 16, FontStyle.Bold)
+            _loadingBar.Text = "Processing..."
+
+            _loadingBar.Visible = False
+            Me.Controls.Add(_loadingBar)
+            _loadingBar.BringToFront()
+        End If
 
         ' 초기화 완료
         _isLoaded = True
     End Sub
 
     ' 2026-01-13 버튼 스타일 초기화
-    Private Sub CustomizeButtons()
-        ' 이관하기 버튼 (Blue Accent) - Main Action Button
-        btnMigrateMember.CustomBaseColor = Color.FromArgb(122, 162, 247)
-        btnMigrateMember.CustomHoverColor = Color.FromArgb(150, 180, 250)
-        btnMigrateMember.BorderRadius = 20
-        btnMigrateMember.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold)
-        btnMigrateMember.ForeColor = Color.Black ' 밝은 배경엔 검은 글씨
-        btnMigrateMember.Text = "회원 이관하기"
-
-
-        ' 엑셀 불러오기 버튼 (Orange)
-        btnLoadExcel.CustomBaseColor = Color.FromArgb(230, 126, 34)
-        btnLoadExcel.CustomHoverColor = Color.FromArgb(243, 156, 18)
-        btnLoadExcel.BorderRadius = 20
-        btnLoadExcel.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold)
-        btnLoadExcel.ForeColor = Color.Black
-
-        ' 초기화 버튼 (Red Danger)
-        btnInitTargetMember.CustomBaseColor = Color.FromArgb(200, 60, 60)
-        btnInitTargetMember.CustomHoverColor = Color.FromArgb(230, 80, 80)
-        btnInitTargetMember.BorderRadius = 15
-        btnInitTargetMember.ForeColor = Color.White
-
-        ' 조회 및 설정 버튼 (Default - Dark Blue)
-        btnSourceSearch.BorderRadius = 10
-        btnSourceSearch.ForeColor = Color.White
-        btnTargetSearch.BorderRadius = 10
-        btnTargetSearch.ForeColor = Color.White
-        btnSetting.BorderRadius = 10
-        btnSetting.ForeColor = Color.White
-    End Sub
+    ' 2026-01-13 (Removed) CustomizeButtons - Designer에서 설정하세요.
+    ' Private Sub CustomizeButtons() ... End Sub
 
     ' (DataViewer 관련 버튼 로직 제거)
 
@@ -122,11 +131,14 @@ Public Class Form1
             ' _companyCode = ReadIni("CONFIG", "CompanyCode", "")
 
             ' [DB]
-            Dim serverIp As String = ReadIni("DB", "ServerIP", "")
-            Dim userId As String = ReadIni("DB", "UserID", "")
-            Dim password As String = ReadIni("DB", "Password", "")
-            _targetDbName = ReadIni("DB", "TargetDB", "")
-            _sourceDbName = ReadIni("DB", "SourceDB", "")
+            ' 2026-01-18 SettingsHelper 사용
+            _settingsHelper = New SettingsHelper(_iniPath)
+
+            Dim serverIp As String = _settingsHelper.ReadIni("DB", "ServerIP", "")
+            Dim userId As String = _settingsHelper.ReadIni("DB", "UserID", "")
+            Dim password As String = _settingsHelper.ReadIni("DB", "Password", "")
+            _targetDbName = _settingsHelper.ReadIni("DB", "TargetDB", "")
+            _sourceDbName = _settingsHelper.ReadIni("DB", "SourceDB", "")
 
             ' DBHelper 초기화 (Target DB에 접속)
             _dbHelper = New DBHelper(serverIp, _targetDbName, userId, password)
@@ -143,6 +155,8 @@ Public Class Form1
 
                 ' 2026-01-12 11:00:00 Source DB 기반 조회 조건 초기화 (동 리스트)
                 LoadDongList()
+                LoadCourseDongList() ' 강좌 탭 동 리스트 로드
+                LoadCourseDongList() ' 강좌 탭 동 리스트 로드
             Else
                 Log("Error: DB 접속 실패. 설정을 확인하세요.")
                 btnMigrateMember.Enabled = False
@@ -232,28 +246,11 @@ Public Class Form1
         ' 이관 진행 여부 변수
         Dim proceed As Boolean = False
 
-        If targetCount > 0 Then
-            ' [CASE 1] 데이터가 이미 존재하는 경우: 강력한 경고 및 안전장치 가동
-            If FrmMessage.ShowMsg(String.Format("대상 업체({0})의 데이터가 이미 {1}건 존재합니다." & vbCrLf & "[경고] 이관 시 데이터가 덮어씌워지거나 초기화 될 수 있습니다." & vbCrLf & "계속 진행하시겠습니까?", selCompanyName, targetCount), "중요 경고", MessageBoxButtons.YesNo) = DialogResult.Yes Then
-
-                ' 비밀번호 입력 요청
-                Dim inputPass As String = Microsoft.VisualBasic.Interaction.InputBox("관리자 비밀번호를 입력해주세요.", "보안 확인", "")
-
-                If inputPass = "dycis" Then
-                    ' 최종 확인
-                    If FrmMessage.ShowMsg("정말로 이관을 시작하시겠습니까? 이 작업은 되돌릴 수 없습니다.", "최종 확인", MessageBoxButtons.YesNo) = DialogResult.Yes Then
-                        proceed = True
-                    End If
-                Else
-                    FrmMessage.ShowMsg("비밀번호가 일치하지 않습니다. 작업을 중단합니다.", "오류")
-                End If
-            End If
-        Else
-            ' [CASE 2] 데이터가 없는 경우: 일반 확인
-            If FrmMessage.ShowMsg(String.Format("'{0}' 업체로 회원 이관을 시작하시겠습니까?", selCompanyName), "확인", MessageBoxButtons.YesNo) = DialogResult.Yes Then
-                proceed = True
-            End If
+        ' 2026-01-16 공통 이관 확인 로직 (Refactored)
+        If Not MigrationUtils.AskMigrationConfirmation(targetCount, selCompanyName, "회원") Then
+            Return
         End If
+        'Dim proceed As Boolean = True
 
 
         If proceed Then
@@ -263,10 +260,12 @@ Public Class Form1
             Log(String.Format("대상: {0} (IDX:{1})", selCompanyName, selCompanyIdx))
 
             ' 진행바 설정 (총 4단계: SP1, SP2, Dong, Member)
-            _loadingBar.Maximum = 4
-            _loadingBar.Value = 0
-            _loadingBar.Visible = True
-            _loadingBar.BringToFront()
+            If _loadingBar IsNot Nothing Then
+                _loadingBar.Maximum = 4
+                _loadingBar.Value = 0
+                _loadingBar.Visible = True
+                _loadingBar.BringToFront()
+            End If
             Application.DoEvents()
 
             ' 2026-01-13 저장 프로시저(SP) 자동 배포 기능 (공통 모듈 사용)
@@ -278,29 +277,27 @@ Public Class Form1
             Dim deploySuccess As Boolean = MigrationUtils.DeploySpList(_dbHelper, spList, AddressOf Log, _loadingBar)
 
             If Not deploySuccess Then
-                _loadingBar.Visible = False
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
                 Return
             End If
 
             Try
                 ' 1. 동/호 정보 이관 (2026-01-09 추가)
-                Log(">>> [1/2] 동/호 정보(Master) 이관 시작...")
                 Dim resultDong = _dbHelper.ExecuteMigrationSP("USP_MIG_DONG_HO", _sourceDbName, selCompanyIdx, selCompanyCode)
                 Log("동/호 이관 결과: " & resultDong)
-                _loadingBar.Value += 1 ' Step 3 Complete
+                If _loadingBar IsNot Nothing Then _loadingBar.Value += 1 ' Step 3 Complete
                 Application.DoEvents()
 
                 ' 2. 회원 정보 이관
-                Log(">>> [2/2] 회원 정보(Member) 이관 시작...")
                 Dim resultMem = _dbHelper.ExecuteMigrationSP("USP_MIG_MEMBER_TO_MEM", _sourceDbName, selCompanyIdx, selCompanyCode)
                 Log("회원 이관 결과: " & resultMem)
-                _loadingBar.Value += 1 ' Step 4 Complete
+                If _loadingBar IsNot Nothing Then _loadingBar.Value += 1 ' Step 4 Complete
                 Application.DoEvents()
 
             Catch ex As Exception
                 Log("실행 중 오류 발생: " & ex.Message)
             Finally
-                _loadingBar.Visible = False
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
             End Try
 
             Log("=== 작업 종료 ===")
@@ -332,60 +329,24 @@ Public Class Form1
     ' 2026-01-14 15:30:00 엑셀 파일 읽기 및 그리드 표시
     Private Sub LoadExcelToGrid(filePath As String)
         Log("=== 엑셀 파일 로딩 시작 ===")
-        Dim connStr As String = String.Format("Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties=""Excel 12.0 Xml;HDR=YES"";", filePath)
 
-        Try
-            Using conn As New OleDbConnection(connStr)
-                conn.Open()
-                Dim dtSchema As DataTable = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, Nothing)
-                Dim sheetName As String = ""
-                If dtSchema.Rows.Count > 0 Then
-                    sheetName = dtSchema.Rows(0)("TABLE_NAME").ToString()
-                Else
-                    Log("오류: 엑셀 시트를 찾을 수 없습니다.")
-                    Return
-                End If
+        ' 2026-01-18 ExcelHelper 사용
+        Dim dtExcel As DataTable = ExcelHelper.LoadExcelToDataTable(filePath, AddressOf Log)
 
-                Dim query As String = String.Format("SELECT * FROM [{0}]", sheetName)
-                Using cmd As New OleDbCommand(query, conn)
-                    Using da As New OleDbDataAdapter(cmd)
-                        Dim dtExcel As New DataTable()
-                        da.Fill(dtExcel)
+        If dtExcel IsNot Nothing Then
+            ' 그리드 바인딩
+            dgvSource.DataSource = dtExcel
+            _isExcelMode = True
 
-                        ' 2026-01-14 15:37:00 빈 행 제거 로직 (동/호 없는 데이터 숨김)
-                        If dtExcel.Columns.Contains("동") AndAlso dtExcel.Columns.Contains("호") Then
-                            For i As Integer = dtExcel.Rows.Count - 1 To 0 Step -1
-                                Dim row As DataRow = dtExcel.Rows(i)
-                                Dim dong As String = If(row("동") Is DBNull.Value, "", row("동").ToString().Trim())
-                                Dim ho As String = If(row("호") Is DBNull.Value, "", row("호").ToString().Trim())
+            ' UI 업데이트
+            grpSource.Text = String.Format("Excel Preview : {0} Rows (File: {1})", dtExcel.Rows.Count, Path.GetFileName(filePath))
+            pnlSourcePagination.Controls.Clear() ' 엑셀 모드에서는 페이지네이션 숨김
 
-                                ' 동 또는 호가 비어있으면 해당 행 제거
-                                If String.IsNullOrEmpty(dong) OrElse String.IsNullOrEmpty(ho) Then
-                                    dtExcel.Rows.RemoveAt(i)
-                                End If
-                            Next
-                        End If
-
-                        ' 그리드 바인딩
-                        dgvSource.DataSource = dtExcel
-                        _isExcelMode = True
-
-                        ' UI 업데이트
-                        grpSource.Text = String.Format("Excel Preview : {0} Rows (File: {1})", dtExcel.Rows.Count, Path.GetFileName(filePath))
-                        pnlSourcePagination.Controls.Clear() ' 엑셀 모드에서는 페이지네이션 숨김
-
-                        Log(String.Format("엑셀 로드 완료: {0}건. 내용을 확인 후 [이관하기] 버튼을 누르세요.", dtExcel.Rows.Count))
-                        btnMigrateMember.Text = "엑셀 이관하기" ' 버튼 텍스트 변경
-                    End Using
-                End Using
-            End Using
-        Catch ex As Exception
-            Log("엑셀 로드 중 오류: " & ex.Message)
-            If ex.Message.Contains("registered") Then
-                FrmMessage.ShowMsg("Microsoft.ACE.OLEDB Provider가 설치되어 있지 않습니다." & vbCrLf & "Microsoft Access Database Engine을 설치해주세요.", "오류")
-            End If
+            Log(String.Format("엑셀 로드 완료: {0}건. 내용을 확인 후 [이관하기] 버튼을 누르세요.", dtExcel.Rows.Count))
+            btnMigrateMember.Text = "엑셀 이관하기" ' 버튼 텍스트 변경
+        Else
             _isExcelMode = False
-        End Try
+        End If
     End Sub
 
     ' 2026-01-14 엑셀 이관 로직 (기존 로직 분리)
@@ -420,15 +381,17 @@ Public Class Form1
         Dim failCount As Integer = 0
 
         ' 진행바 설정
-        _loadingBar.Maximum = dtExcel.Rows.Count
-        _loadingBar.Value = 0
-        _loadingBar.Visible = True
-        _loadingBar.BringToFront()
+        If _loadingBar IsNot Nothing Then
+            _loadingBar.Maximum = dtExcel.Rows.Count
+            _loadingBar.Value = 0
+            _loadingBar.Visible = True
+            _loadingBar.BringToFront()
+        End If
         Application.DoEvents()
 
         Try
             For Each row As DataRow In dtExcel.Rows
-                _loadingBar.Value += 1 ' 진행률 업데이트
+                If _loadingBar IsNot Nothing Then _loadingBar.Value += 1 ' 진행률 업데이트
 
                 ' 필수 값 체크 (동/호)
                 Dim dong As String = If(row("동") Is DBNull.Value, "", row("동").ToString())
@@ -464,43 +427,21 @@ Public Class Form1
                         birth,
                         gender.Replace("'", "''"))
 
-                    Dim resultDt As DataTable = _dbHelper.ExecuteSqlWithResultCheck(sql)
-                    If resultDt IsNot Nothing AndAlso resultDt.Rows.Count > 0 Then
-                        Dim res As String = ""
+                    Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(sql)
+                    If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                        Dim res As String = result.Rows(0)("Result").ToString()
                         Dim msg As String = ""
+                        If result.Columns.Contains("Msg") Then msg = result.Rows(0)("Msg").ToString()
 
-                        If resultDt.Columns.Contains("Result") Then
-                            res = resultDt.Rows(0)("Result").ToString()
-                            If resultDt.Columns.Contains("Message") Then
-                                msg = resultDt.Rows(0)("Message").ToString()
-                            End If
-                        ElseIf resultDt.Columns.Contains("Response") Then
-                            ' 2026-01-14 Fallback: Response 컬럼 지원
-                            res = resultDt.Rows(0)("Response").ToString()
-                            ' Response만 있고 Message가 없을 수 있으므로 처리
-                            If resultDt.Columns.Contains("Message") Then
-                                msg = resultDt.Rows(0)("Message").ToString()
-                            Else
-                                msg = "Message column not found (Response received)"
-                            End If
-                        End If
-
-                        If res = "SUCCESS" OrElse res = "OK" OrElse res.Contains("Success") Then
+                        If res = "SUCCESS" Then
                             successCount += 1
-                        ElseIf String.IsNullOrEmpty(res) Then
-                            ' 2026-01-14 디버깅: 컬럼이 없을 경우 확인
-                            Dim cols As New List(Of String)
-                            For Each col As DataColumn In resultDt.Columns
-                                cols.Add(col.ColumnName)
-                            Next
-                            failCount += 1
-                            Log(String.Format("오류 ({0}동 {1}호): 결과 컬럼 누락. 반환된 컬럼: [{2}]", dong, ho, String.Join(", ", cols)))
                         Else
                             failCount += 1
                             Log(String.Format("실패 ({0}동 {1}호): {2} (Msg: {3})", dong, ho, res, msg))
                         End If
                     Else
                         failCount += 1
+                        Log(String.Format("실패 ({0}동 {1}호): 결과 반환 없음", dong, ho))
                     End If
                 Catch ex As Exception
                     failCount += 1
@@ -519,7 +460,7 @@ Public Class Form1
             Log("이관 중 치명적 오류: " & ex.Message)
         Finally
             ' 진행바 숨김
-            _loadingBar.Visible = False
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
         End Try
 
         Log("=== 엑셀 데이터 이관 종료 ===")
@@ -536,52 +477,15 @@ Public Class Form1
         ' (2026-01-09 12:55:00 코드 끝)
     End Sub
 
-    ' 2026-01-12 11:00:00 동 리스트 로드 (Source DB 기준)
+    ' 2026-01-12 11:00:00 동 리스트 로드 (Source DB 기준) - Refactored
     Private Sub LoadDongList()
-        If _sourceHelper Is Nothing Then Return
-
-        Try
-            Dim query As String = "SELECT DISTINCT DongAddr FROM t_aptgb1 ORDER BY DongAddr"
-            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
-
-            cboSourceDong.Items.Clear()
-            cboSourceDong.Items.Add("전체")
-            For Each row As DataRow In dt.Rows
-                cboSourceDong.Items.Add(row("DongAddr").ToString())
-            Next
-            cboSourceDong.SelectedIndex = 0
-
-        Catch ex As Exception
-            Log("동 리스트 로드 실패: " & ex.Message)
-        End Try
+        MigrationUtils.LoadDongList(_sourceHelper, cboSourceDong, AddressOf Log)
     End Sub
 
     Private Sub cboSourceDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboSourceDong.SelectedIndexChanged
         If _sourceHelper Is Nothing OrElse cboSourceDong.SelectedItem Is Nothing Then Return
-
         Dim selectedDong As String = cboSourceDong.SelectedItem.ToString()
-        If selectedDong = "전체" Then
-            cboSourceHo.Items.Clear()
-            cboSourceHo.Items.Add("전체")
-            cboSourceHo.SelectedIndex = 0
-            Return
-        End If
-
-        Try
-            ' 호 리스트 로드 (선택된 동 기준)
-            Dim query As String = String.Format("SELECT DISTINCT HoAddr FROM t_aptgb2 WHERE DongAddr = '{0}' ORDER BY HoAddr", selectedDong)
-            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
-
-            cboSourceHo.Items.Clear()
-            cboSourceHo.Items.Add("전체")
-            For Each row As DataRow In dt.Rows
-                cboSourceHo.Items.Add(row("HoAddr").ToString())
-            Next
-            cboSourceHo.SelectedIndex = 0
-
-        Catch ex As Exception
-            Log("호 리스트 로드 실패: " & ex.Message)
-        End Try
+        MigrationUtils.LoadHoList(_sourceHelper, selectedDong, cboSourceHo, AddressOf Log)
     End Sub
 
     ' 2026-01-13 분리된 조회 버튼 핸들러
@@ -625,29 +529,10 @@ Public Class Form1
         e.Cancel = False
     End Sub
 
-    ' 2026-01-12 15:50:00 TabControl Dark Theme Draw Implementation
-    Private Sub tabMain_DrawItem(sender As Object, e As DrawItemEventArgs) Handles tabMain.DrawItem
-        Dim tabs As TabControl = DirectCast(sender, TabControl)
-        Dim g As Graphics = e.Graphics
-        Dim r As Rectangle = e.Bounds
-
-        ' Tokyo Night Palette
-        Dim backColor As Color = Color.FromArgb(26, 27, 38)
-        Dim activeColor As Color = Color.FromArgb(65, 72, 104)
-        Dim foreColor As Color = Color.White
-        Dim inactiveFore As Color = Color.FromArgb(169, 177, 214)
-
-        ' Background Fill
-        g.FillRectangle(New SolidBrush(backColor), r)
-
-        ' Selection Highlight
-        If e.Index = tabs.SelectedIndex Then
-            g.FillRectangle(New SolidBrush(activeColor), r)
-            g.DrawString(tabs.TabPages(e.Index).Text, tabs.Font, New SolidBrush(foreColor), r.X + 10, r.Y + 6)
-        Else
-            g.DrawString(tabs.TabPages(e.Index).Text, tabs.Font, New SolidBrush(inactiveFore), r.X + 10, r.Y + 6)
-        End If
-    End Sub
+    ' 2026-01-12 (Removed) Tab Control OwnerDraw - Designer 제어를 위해 제거
+    ' Private Sub tabMain_DrawItem(...) Handles tabMain.DrawItem
+    ' ...
+    ' End Sub
 
     ' 2026-01-12 16:16:00 Image Hover Preview
     Private Sub dgvSource_CellMouseEnter(sender As Object, e As DataGridViewCellEventArgs) Handles dgvSource.CellMouseEnter
@@ -660,83 +545,37 @@ Public Class Form1
             Dim cellVal = dgv.Rows(e.RowIndex).Cells(e.ColumnIndex).Value
 
             If cellVal IsNot Nothing AndAlso TypeOf cellVal Is Byte() Then
-                Try
-                    Dim bytes As Byte() = DirectCast(cellVal, Byte())
-                    If bytes.Length > 0 Then
-                        Using ms As New MemoryStream(bytes)
-                            Dim originalImage As Image = Image.FromStream(ms)
-                            ' 그리기 위한 비트맵 복사 (Graphics 생성을 위해)
-                            Dim bmp As New Bitmap(originalImage)
+                ' 2026-01-18 UiHelper 사용
+                Dim bytes As Byte() = DirectCast(cellVal, Byte())
 
-                            ' 회원 정보 가져오기 (컬럼 이름 확인 필요: MbNo, MbName)
-                            Dim mbName As String = "Unknown"
-                            Dim mbNo As String = "Unknown"
+                ' 회원 정보 가져오기
+                Dim mbName As String = "Unknown"
+                Dim mbNo As String = "Unknown"
 
-                            ' 안전하게 컬럼 값 가져오기
-                            If dgv.Columns.Contains("MbName") Then mbName = dgv.Rows(e.RowIndex).Cells("MbName").Value.ToString()
-                            If dgv.Columns.Contains("MbNo") Then mbNo = dgv.Rows(e.RowIndex).Cells("MbNo").Value.ToString()
+                ' 안전하게 컬럼 값 가져오기
+                If dgv.Columns.Contains("MbName") Then mbName = dgv.Rows(e.RowIndex).Cells("MbName").Value.ToString()
+                If dgv.Columns.Contains("MbNo") Then mbNo = dgv.Rows(e.RowIndex).Cells("MbNo").Value.ToString()
 
-                            Dim infoText As String = String.Format("{0} ({1})", mbName, mbNo)
+                Dim bmp As Bitmap = UiHelper.CreatePreviewImage(bytes, mbName, mbNo)
 
-                            Using g As Graphics = Graphics.FromImage(bmp)
-                                g.SmoothingMode = SmoothingMode.AntiAlias
-                                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit
+                If bmp IsNot Nothing Then
+                    picPreview.Image = bmp
 
-                                ' 텍스트 배경 (반투명 검정)
-                                ' 텍스트 폰트 설정
-                                Dim nameFont As New Font("Segoe UI", 15, FontStyle.Bold)
-                                Dim noFont As New Font("Segoe UI", 12.5F, FontStyle.Bold)
+                    ' Position Preview near mouse
+                    Dim mousePos = Me.PointToClient(Cursor.Position)
+                    picPreview.Location = New Point(mousePos.X + 20, mousePos.Y + 20)
 
-                                Dim nameSize As SizeF = g.MeasureString(mbName, nameFont)
-                                Dim noSize As SizeF = g.MeasureString("No. " & mbNo, noFont)
-
-                                ' 하단 여백 및 줄 간격
-                                Dim padding As Integer = 8
-                                Dim lineSpacing As Integer = 2
-                                Dim totalTextHeight As Integer = CInt(nameSize.Height + lineSpacing + noSize.Height)
-                                Dim boxHeight As Integer = totalTextHeight + (padding * 2)
-
-                                ' 텍스트 배경 영역 (더 진한 반투명)
-                                Dim rect As New Rectangle(0, bmp.Height - boxHeight, bmp.Width, boxHeight)
-
-                                Using brushBg As New SolidBrush(Color.FromArgb(220, 20, 20, 25)) ' Deep Dark Blue-ish Black
-                                    g.FillRectangle(brushBg, rect)
-                                End Using
-
-                                ' 텍스트 그리기 좌표
-                                Dim namePos As New PointF(padding, rect.Y + padding)
-                                Dim noPos As New PointF(padding, namePos.Y + nameSize.Height + lineSpacing)
-
-                                ' 그림자 효과
-                                g.DrawString(mbName, nameFont, Brushes.Black, namePos.X + 1, namePos.Y + 1)
-                                g.DrawString("No. " & mbNo, noFont, Brushes.Black, noPos.X + 1, noPos.Y + 1)
-
-                                ' 실제 텍스트 (밝은 흰색 & 회색)
-                                g.DrawString(mbName, nameFont, Brushes.White, namePos)
-                                g.DrawString("No. " & mbNo, noFont, Brushes.White, noPos)
-                            End Using
-
-                            picPreview.Image = bmp
-                        End Using
-
-                        ' Position Preview near mouse
-                        Dim mousePos = Me.PointToClient(Cursor.Position)
-                        picPreview.Location = New Point(mousePos.X + 20, mousePos.Y + 20)
-
-                        ' Ensure it stays within form bounds
-                        If picPreview.Right > Me.ClientSize.Width Then
-                            picPreview.Left = mousePos.X - picPreview.Width - 20
-                        End If
-                        If picPreview.Bottom > Me.ClientSize.Height Then
-                            picPreview.Top = mousePos.Y - picPreview.Height - 20
-                        End If
-
-                        picPreview.Visible = True
-                        picPreview.BringToFront()
+                    ' Ensure it stays within form bounds
+                    If picPreview.Right > Me.ClientSize.Width Then
+                        picPreview.Left = mousePos.X - picPreview.Width - 20
                     End If
-                Catch ex As Exception
-                    ' Ignore invalid image data
-                End Try
+                    If picPreview.Bottom > Me.ClientSize.Height Then
+                        picPreview.Top = mousePos.Y - picPreview.Height - 20
+                    End If
+
+                    picPreview.Visible = True
+                    picPreview.BringToFront()
+                End If
             End If
         End If
     End Sub
@@ -747,7 +586,7 @@ Public Class Form1
     End Sub
 
     ' 2026-01-12 16:35:00 Row Numbering Implementation
-    Private Sub dgv_RowPostPaint(sender As Object, e As DataGridViewRowPostPaintEventArgs) Handles dgvSource.RowPostPaint, dgvTarget.RowPostPaint
+    Private Sub dgv_RowPostPaint(sender As Object, e As DataGridViewRowPostPaintEventArgs) Handles dgvSource.RowPostPaint, dgvTarget.RowPostPaint, dgvCourseSource.RowPostPaint, dgvCourseTarget.RowPostPaint, dgvCourseSource.RowPostPaint, dgvCourseTarget.RowPostPaint
         Dim dgv As DataGridView = DirectCast(sender, DataGridView)
         Dim rowIdx As String = (e.RowIndex + 1).ToString()
 
@@ -788,114 +627,39 @@ Public Class Form1
         End If
     End Sub
 
-    ' 2026-01-12 16:40:00 Numbered Pagination Logic (Source)
-    Private Sub RenderSourcePagination(totalRows As Integer)
-        pnlSourcePagination.Controls.Clear()
+    ' 2026-01-16 강좌 탭 페이징 변수
+    Private _currentCourseSourcePage As Integer = 1
+    Private _currentCourseTargetPage As Integer = 1
+    Private _courseSourcePageSize As Integer = 50
+    Private _courseTargetPageSize As Integer = 100
 
-        Dim totalPages As Integer = Math.Ceiling(totalRows / _sourcePageSize)
-        If totalPages = 0 Then totalPages = 1
-
-        Dim startPage As Integer = ((_currentSourcePage - 1) \ 10) * 10 + 1
-        Dim endPage As Integer = Math.Min(startPage + 9, totalPages)
-
-        ' [<] Prev Block Button
-        If startPage > 1 Then
-            Dim btn As New ModernButton()
-            btn.Text = "<"
-            btn.Size = New Size(30, 30)
-            btn.Tag = startPage - 1
-            btn.BorderRadius = 5
-            btn.CustomBaseColor = ThemeManager.CurrentPalette.Accent
-            AddHandler btn.Click, AddressOf SourcePageButton_Click
-            pnlSourcePagination.Controls.Add(btn)
-        End If
-
-        ' Numbered Buttons
-        For i As Integer = startPage To endPage
-            Dim btn As New ModernButton()
-            btn.Text = i.ToString()
-            btn.Size = New Size(40, 30)
-            btn.Tag = i
-            btn.BorderRadius = 5
-
-            If i = _currentSourcePage Then
-                btn.ForeColor = Color.White
-                btn.CustomBaseColor = ThemeManager.CurrentPalette.Accent
-            Else
-                btn.ForeColor = ThemeManager.CurrentPalette.ForeColor
-                btn.CustomBaseColor = Color.Transparent
-            End If
-
-            AddHandler btn.Click, AddressOf SourcePageButton_Click
-            pnlSourcePagination.Controls.Add(btn)
-        Next
-
-        ' [>] Next Block Button
-        If endPage < totalPages Then
-            Dim btn As New ModernButton()
-            btn.Text = ">"
-            btn.Size = New Size(30, 30)
-            btn.Tag = endPage + 1
-            btn.BorderRadius = 5
-            btn.CustomBaseColor = ThemeManager.CurrentPalette.Accent
-            AddHandler btn.Click, AddressOf SourcePageButton_Click
-            pnlSourcePagination.Controls.Add(btn)
+    Private Sub cboCourseLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboCourseLimit.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 50
+        If cboCourseLimit.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboCourseLimit.SelectedItem.ToString(), val) Then
+            _courseSourcePageSize = val
         End If
     End Sub
 
+    Private Sub cboCourseLimitTarget_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboCourseLimitTarget.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 100
+        If cboCourseLimitTarget.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboCourseLimitTarget.SelectedItem.ToString(), val) Then
+            _courseTargetPageSize = val
+        End If
+    End Sub
+
+    ' 2026-01-12 16:40:00 Numbered Pagination Logic (Source)
+    Private Sub RenderSourcePagination(totalRows As Integer)
+        ' 2026-01-18 PaginationHelper 사용
+        PaginationHelper.RenderPagination(pnlSourcePagination, totalRows, _sourcePageSize, _currentSourcePage, AddressOf SourcePageButton_Click)
+    End Sub
+
+
     ' 2026-01-12 16:40:00 Numbered Pagination Logic (Target)
     Private Sub RenderTargetPagination(totalRows As Integer)
-        pnlTargetPagination.Controls.Clear()
-
-        Dim totalPages As Integer = Math.Ceiling(totalRows / _targetPageSize)
-        If totalPages = 0 Then totalPages = 1
-
-        Dim startPage As Integer = ((_currentTargetPage - 1) \ 10) * 10 + 1
-        Dim endPage As Integer = Math.Min(startPage + 9, totalPages)
-
-        ' [<] Prev Block Button
-        If startPage > 1 Then
-            Dim btn As New ModernButton()
-            btn.Text = "<"
-            btn.Size = New Size(30, 30)
-            btn.Tag = startPage - 1
-            btn.BorderRadius = 5
-            btn.CustomBaseColor = ThemeManager.CurrentPalette.Accent
-            AddHandler btn.Click, AddressOf TargetPageButton_Click
-            pnlTargetPagination.Controls.Add(btn)
-        End If
-
-        ' Numbered Buttons
-        For i As Integer = startPage To endPage
-            Dim btn As New ModernButton()
-            btn.Text = i.ToString()
-            btn.Size = New Size(40, 30)
-            btn.Tag = i
-            btn.BorderRadius = 5
-
-            If i = _currentTargetPage Then
-                btn.ForeColor = Color.White
-                btn.CustomBaseColor = ThemeManager.CurrentPalette.Accent
-            Else
-                btn.ForeColor = ThemeManager.CurrentPalette.ForeColor
-                btn.CustomBaseColor = Color.Transparent
-            End If
-
-            AddHandler btn.Click, AddressOf TargetPageButton_Click
-            pnlTargetPagination.Controls.Add(btn)
-        Next
-
-        ' [>] Next Block Button
-        If endPage < totalPages Then
-            Dim btn As New ModernButton()
-            btn.Text = ">"
-            btn.Size = New Size(30, 30)
-            btn.Tag = endPage + 1
-            btn.BorderRadius = 5
-            btn.CustomBaseColor = ThemeManager.CurrentPalette.Accent
-            AddHandler btn.Click, AddressOf TargetPageButton_Click
-            pnlTargetPagination.Controls.Add(btn)
-        End If
+        ' 2026-01-18 PaginationHelper 사용
+        PaginationHelper.RenderPagination(pnlTargetPagination, totalRows, _targetPageSize, _currentTargetPage, AddressOf TargetPageButton_Click)
     End Sub
 
     Private Sub SourcePageButton_Click(sender As Object, e As EventArgs)
@@ -1082,11 +846,7 @@ Public Class Form1
         End Try
     End Sub
 
-    Private Function ReadIni(section As String, key As String, def As String) As String
-        Dim sb As New StringBuilder(255)
-        GetPrivateProfileString(section, key, def, sb, 255, _iniPath)
-        Return sb.ToString()
-    End Function
+    ' (2026-01-18) ReadIni 함수 제거 (SettingsHelper로 대체)
 
     ' 2026-01-13 UI 개선: 이관 버튼 중앙 정렬 (pnlCenterAction Resize)
     Private Sub pnlCenterAction_Resize(sender As Object, e As EventArgs) Handles pnlCenterAction.Resize
@@ -1096,7 +856,287 @@ Public Class Form1
         End If
     End Sub
 
-    Private Sub btnExcelMigrate_Click(sender As Object, e As EventArgs)
+    ' ==========================================
+    ' 강좌 이관 관련 코드 (2026-01-16 추가)
+    ' ==========================================
 
+    ' 2026-01-16 강좌 탭 페이징 렌더러 (Source)
+    Private Sub RenderCourseSourcePagination(totalRows As Integer)
+        ' 2026-01-18 PaginationHelper 사용
+        PaginationHelper.RenderPagination(pnlCourseSourcePagination, totalRows, _courseSourcePageSize, _currentCourseSourcePage, AddressOf CourseSourcePageButton_Click)
     End Sub
+
+    ' 2026-01-16 강좌 탭 페이징 렌더러 (Target)
+    Private Sub RenderCourseTargetPagination(totalRows As Integer)
+        ' 2026-01-18 PaginationHelper 사용
+        PaginationHelper.RenderPagination(pnlCourseTargetPagination, totalRows, _courseTargetPageSize, _currentCourseTargetPage, AddressOf CourseTargetPageButton_Click)
+    End Sub
+
+    Private Sub CourseSourcePageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentCourseSourcePage = Convert.ToInt32(btn.Tag)
+        btnCourseSourceSearch.PerformClick()
+    End Sub
+
+    Private Sub CourseTargetPageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentCourseTargetPage = Convert.ToInt32(btn.Tag)
+        btnCourseTargetSearch.PerformClick()
+    End Sub
+
+    ' 1. 강좌 Old DB 조회 (동/호 검색 추가)
+    Private Sub btnCourseSourceSearch_Click(sender As Object, e As EventArgs) Handles btnCourseSourceSearch.Click
+        If _sourceHelper Is Nothing Then Return
+
+        Try
+            ' 2026-01-17 10:25:00 코드 시작: Source 조회 쿼리 수정 (JOIN 추가, Dong/Ho 조회)
+            ' 조건: 날짜 범위, (회원명 OR 강좌명)
+            Dim startDate As String = dtpCourseStart.Value.ToString("yyyy-MM-dd")
+            Dim endDate As String = dtpCourseEnd.Value.ToString("yyyy-MM-dd")
+            Dim searchName As String = txtCourseSourceSearchName.Text.Trim()
+            Dim dong As String = If(cboCourseSourceDong.SelectedItem IsNot Nothing, cboCourseSourceDong.SelectedItem.ToString(), "전체")
+            Dim ho As String = If(cboCourseSourceHo.SelectedItem IsNot Nothing, cboCourseSourceHo.SelectedItem.ToString(), "전체")
+
+            ' rbcode = '0001' 조건 추가 (필수)
+            ' 테이블 Alias 사용: A = T_TrsInout, B = T_Member
+            Dim whereClause As String = String.Format("A.TrsDate BETWEEN '{0}' AND '{1}' AND A.rbcode = '0001'", startDate, endDate)
+
+            ' 이름 검색 (회원이름만 검색, 강좌명 제외)
+            If Not String.IsNullOrEmpty(searchName) Then
+                whereClause &= String.Format(" AND (B.MbName LIKE '%{0}%')", searchName)
+            End If
+
+            ' 동/호 검색 (JOIN이 있으므로 가능)
+            If dong <> "전체" Then
+                whereClause &= String.Format(" AND B.DongAddr = '{0}'", dong)
+            End If
+            If ho <> "전체" Then
+                whereClause &= String.Format(" AND B.HoAddr = '{0}'", ho)
+            End If
+
+            ' Count Query
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount As DataTable = _sourceHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+
+            ' Paging Query (OFFSET/FETCH 사용, RowNum 컬럼 제거)
+            Dim offset As Integer = (_currentCourseSourcePage - 1) * _courseSourcePageSize
+
+            ' T_TrsInout의 모든 컬럼(A.*)과 T_Member의 동,호,이름(B.DongAddr...)을 함께 조회
+            Dim query As String = String.Format("SELECT A.*, B.DongAddr, B.HoAddr, B.MbName " &
+                                                "FROM T_TrsInout A " &
+                                                "LEFT JOIN T_Member B ON A.MbNo = B.MbNo " &
+                                                "WHERE {0} " &
+                                                "ORDER BY A.TrsDate DESC, A.TrsNo DESC " &
+                                                "OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY",
+                                                whereClause, offset, _courseSourcePageSize)
+
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+            dgvCourseSource.DataSource = dt
+            grpCourseSource.Text = String.Format("Old DB (Source) - 매출내역 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentCourseSourcePage)
+
+            ' Render Pagination
+            RenderCourseSourcePagination(totalRows)
+            ' 2026-01-17 10:25:00 코드 끝
+
+        Catch ex As Exception
+            Log("강좌 소스 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    ' 강좌 탭용 동 리스트 로드 - Refactored
+    Private Sub LoadCourseDongList()
+        MigrationUtils.LoadDongList(_sourceHelper, cboCourseSourceDong, AddressOf Log)
+    End Sub
+
+    ' 강좌 탭용 동 선택 시 호 리스트 로드 - Refactored
+    Private Sub cboCourseSourceDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboCourseSourceDong.SelectedIndexChanged
+        If _sourceHelper Is Nothing OrElse cboCourseSourceDong.SelectedItem Is Nothing Then Return
+        Dim selectedDong As String = cboCourseSourceDong.SelectedItem.ToString()
+        MigrationUtils.LoadHoList(_sourceHelper, selectedDong, cboCourseSourceHo, AddressOf Log)
+    End Sub
+
+    ' 2. 강좌 엑셀 불러오기 (기존 회원 엑셀 로직 재사용 가능여부 확인 -> 별도 로직이 안전)
+    Private Sub btnCourseLoadExcel_Click(sender As Object, e As EventArgs) Handles btnCourseLoadExcel.Click
+        Dim ofd As New OpenFileDialog()
+        ofd.Filter = "Excel Files|*.xlsx;*.xls"
+        ofd.Title = "강좌 엑셀 파일 선택"
+
+        If ofd.ShowDialog() = DialogResult.OK Then
+            LoadCourseExcelToGrid(ofd.FileName)
+        End If
+    End Sub
+
+    Private Sub LoadCourseExcelToGrid(filePath As String)
+        ' TODO: 엑셀 로드 구현 (회원과 유사하게)
+        ' 현재는 Old DB 위주이므로 스텁만 작성
+        FrmMessage.ShowMsg("아직 구현되지 않았습니다. DB 조회를 이용해주세요.", "알림")
+    End Sub
+
+    ' 3. 강좌 이관 실행
+    Private Sub btnMigrateCourse_Click(sender As Object, e As EventArgs) Handles btnMigrateCourse.Click
+        If Not MigrationUtils.ValidateCompanySelection(cboCompany) Then Return
+        If Not MigrationUtils.ValidateDbSettings(_targetDbName, _sourceDbName) Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+
+        ' 2026-01-16 데이터 존재 여부 확인 및 공통 확인 로직
+        Dim targetCount As Integer = 0
+        Try
+            Dim countQuery As String = String.Format("SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE F_COMPANY_CODE = '{0}'", selCompanyCode)
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                targetCount = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+        Catch ex As Exception
+            Log("데이터 확인 중 오류 발생: " & ex.Message)
+            Return
+        End Try
+
+        If Not MigrationUtils.AskMigrationConfirmation(targetCount, selCompanyName, "강좌") Then Return
+
+        Log("=== 강좌 이관 시작 ===")
+        If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+
+        Try
+            ' SP 배포
+            If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_MIG_OLD_TO_NEW_GANGJWA.sql"}, AddressOf Log) Then
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                Return
+            End If
+
+            ' SP 실행
+            Log(">>> 강좌 통합 이관 프로시저 실행 중 (시간이 소요될 수 있습니다)...")
+            Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(String.Format("EXEC USP_MIG_OLD_TO_NEW_GANGJWA @P_CompanyCode='{0}', @OldDbName='{1}'", selCompanyCode, _sourceDbName))
+
+            If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                Dim res As String = result.Rows(0)(0).ToString()
+                Dim errMsg As String = ""
+                If result.Columns.Contains("ErrorMessage") AndAlso result.Rows(0)("ErrorMessage") IsNot DBNull.Value Then
+                    errMsg = result.Rows(0)("ErrorMessage").ToString()
+                End If
+
+                Log("실행 결과: " & res & If(String.IsNullOrEmpty(errMsg), "", " (" & errMsg & ")"))
+            End If
+
+            Log("=== 강좌 이관 완료 ===")
+            btnCourseTargetSearch.PerformClick() ' 결과 조회
+
+        Catch ex As Exception
+            Log("강좌 이관 중 오류: " & ex.Message)
+        Finally
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+        End Try
+    End Sub
+
+    ' 4. 강좌 New DB 조회 (Target) - T_ORDER_DETAIL_GANGJWA_INFO 조회
+    Private Sub btnCourseTargetSearch_Click(sender As Object, e As EventArgs) Handles btnCourseTargetSearch.Click
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+
+        Try
+            ' 2026-01-17 10:23:00 코드 시작: Target 조회 쿼리 수정 (통으로 조회)
+            Dim searchName As String = txtCourseTargetSearchName.Text.Trim()
+            Dim whereClause As String = String.Format("F_COMPANY_CODE = '{0}'", selCompanyCode)
+
+            ' 이름 검색 (F_MEM_NAME 컬럼이 있다고 가정 - SP 확인 결과 있음)
+            If Not String.IsNullOrEmpty(searchName) Then
+                whereClause &= String.Format(" AND (F_MEM_NAME LIKE '%{0}%')", searchName)
+            End If
+
+            ' Count
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+
+            ' Paging
+            Dim offset As Integer = (_currentCourseTargetPage - 1) * _courseTargetPageSize
+
+            ' SELECT * FROM T_ORDER_DETAIL_GANGJWA_INFO
+            Dim query As String = String.Format("SELECT * FROM T_ORDER_DETAIL_GANGJWA_INFO " &
+                                                "WHERE {0} " &
+                                                "ORDER BY F_IDX DESC " &
+                                                "OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY",
+                                                whereClause, offset, _courseTargetPageSize)
+
+            Dim dt As DataTable = _dbHelper.ExecuteQuery(query)
+
+            dgvCourseTarget.DataSource = dt
+            grpCourseTarget.Text = String.Format("New DB (Target) - 강좌 이력 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentCourseTargetPage)
+
+            RenderCourseTargetPagination(totalRows)
+            ' 2026-01-17 10:23:00 코드 끝
+
+        Catch ex As Exception
+            Log("강좌 타겟 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    ' 2026-01-17 10:32:00 코드 시작: 강좌 탭 검색창 엔터키 이벤트 추가
+    Private Sub txtCourseSourceSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtCourseSourceSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnCourseSourceSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub txtCourseTargetSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtCourseTargetSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnCourseTargetSearch.PerformClick()
+        End If
+    End Sub
+    ' 2026-01-17 10:32:00 코드 끝
+
+    ' 5. 강좌 데이터 초기화
+    Private Sub btnInitTargetCourse_Click(sender As Object, e As EventArgs) Handles btnInitTargetCourse.Click
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+
+        If MigrationUtils.AskDeleteConfirmation(selCompanyName, "강좌 및 수강 이력") Then
+
+            Log("=== 강좌 데이터 초기화 시작 ===")
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+
+            Try
+                ' SP 배포
+                If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_RESET_GANGJWA_MIGRATION.sql"}, AddressOf Log) Then
+                    If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                    Return
+                End If
+
+                ' SP 실행
+                Dim query As String = String.Format("EXEC USP_RESET_GANGJWA_MIGRATION @P_CompanyCode='{0}'", selCompanyCode)
+                Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(query)
+
+                If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                    Dim res As String = result.Rows(0)("Result").ToString()
+                    Dim msg As String = result.Rows(0)("Msg").ToString()
+                    Log(String.Format("결과: {0} ({1})", res, msg))
+                End If
+
+                Log("=== 강좌 데이터 초기화 완료 ===")
+                btnCourseTargetSearch.PerformClick() ' 그리드 갱신
+
+            Catch ex As Exception
+                Log("강좌 초기화 중 오류: " & ex.Message)
+            Finally
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+            End Try
+        End If
+    End Sub
+
 End Class

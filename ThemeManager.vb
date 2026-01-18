@@ -119,6 +119,9 @@ Public Class ThemeManager
         Dim p = CurrentPalette
 
         If TypeOf ctrl Is Button Then
+            ' 2026-01-18 ModernButton은 자체 스타일을 가지므로 테마 적용에서 제외
+            If TypeOf ctrl Is ModernButton Then Return
+
             Dim btn = DirectCast(ctrl, Button)
             btn.FlatStyle = FlatStyle.Flat
             btn.FlatAppearance.BorderSize = 1

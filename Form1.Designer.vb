@@ -52,6 +52,29 @@ Partial Class Form1
         cboLimitTarget = New ComboBox()
         btnInitTargetMember = New ModernButton()
         tabCourse = New TabPage()
+        splitContainerCourse = New SplitContainer()
+        grpCourseSource = New GroupBox()
+        pnlCourseSourcePagination = New FlowLayoutPanel()
+        dgvCourseSource = New DataGridView()
+        pnlCourseSourceSearch = New Panel()
+        btnCourseLoadExcel = New ModernButton()
+        btnCourseSourceSearch = New ModernButton()
+        dtpCourseEnd = New DateTimePicker()
+        dtpCourseStart = New DateTimePicker()
+        cboCourseLimit = New ComboBox()
+        cboCourseSourceHo = New ComboBox()
+        cboCourseSourceDong = New ComboBox()
+        txtCourseSourceSearchName = New TextBox()
+        pnlCourseCenterAction = New Panel()
+        btnMigrateCourse = New ModernButton()
+        grpCourseTarget = New GroupBox()
+        pnlCourseTargetPagination = New FlowLayoutPanel()
+        dgvCourseTarget = New DataGridView()
+        pnlCourseTargetSearch = New Panel()
+        btnCourseTargetSearch = New ModernButton()
+        txtCourseTargetSearchName = New TextBox()
+        cboCourseLimitTarget = New ComboBox()
+        btnInitTargetCourse = New ModernButton()
         tabLocker = New TabPage()
         tabLockerPW = New TabPage()
         picPreview = New PictureBox()
@@ -69,6 +92,18 @@ Partial Class Form1
         grpTarget.SuspendLayout()
         CType(dgvTarget, ComponentModel.ISupportInitialize).BeginInit()
         pnlTargetSearch.SuspendLayout()
+        tabCourse.SuspendLayout()
+        CType(splitContainerCourse, ComponentModel.ISupportInitialize).BeginInit()
+        splitContainerCourse.Panel1.SuspendLayout()
+        splitContainerCourse.Panel2.SuspendLayout()
+        splitContainerCourse.SuspendLayout()
+        grpCourseSource.SuspendLayout()
+        CType(dgvCourseSource, ComponentModel.ISupportInitialize).BeginInit()
+        pnlCourseSourceSearch.SuspendLayout()
+        pnlCourseCenterAction.SuspendLayout()
+        grpCourseTarget.SuspendLayout()
+        CType(dgvCourseTarget, ComponentModel.ISupportInitialize).BeginInit()
+        pnlCourseTargetSearch.SuspendLayout()
         CType(picPreview, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
@@ -197,7 +232,6 @@ Partial Class Form1
         tabMain.Controls.Add(tabLocker)
         tabMain.Controls.Add(tabLockerPW)
         tabMain.Dock = DockStyle.Fill
-        tabMain.DrawMode = TabDrawMode.OwnerDrawFixed
         tabMain.Location = New Point(0, 70)
         tabMain.Name = "tabMain"
         tabMain.Padding = New Point(20, 6)
@@ -445,11 +479,299 @@ Partial Class Form1
         ' tabCourse
         ' 
         tabCourse.BackColor = Color.FromArgb(CByte(26), CByte(27), CByte(38))
+        tabCourse.Controls.Add(splitContainerCourse)
         tabCourse.Location = New Point(4, 30)
         tabCourse.Name = "tabCourse"
+        tabCourse.Padding = New Padding(3)
         tabCourse.Size = New Size(1272, 737)
         tabCourse.TabIndex = 1
         tabCourse.Text = "강좌정보 이관"
+        ' 
+        ' splitContainerCourse
+        ' 
+        splitContainerCourse.Dock = DockStyle.Fill
+        splitContainerCourse.Location = New Point(3, 3)
+        splitContainerCourse.Name = "splitContainerCourse"
+        splitContainerCourse.Orientation = Orientation.Horizontal
+        ' 
+        ' splitContainerCourse.Panel1
+        ' 
+        splitContainerCourse.Panel1.Controls.Add(grpCourseSource)
+        splitContainerCourse.Panel1.Controls.Add(pnlCourseCenterAction)
+        ' 
+        ' splitContainerCourse.Panel2
+        ' 
+        splitContainerCourse.Panel2.Controls.Add(grpCourseTarget)
+        splitContainerCourse.Size = New Size(1266, 731)
+        splitContainerCourse.SplitterDistance = 420
+        splitContainerCourse.TabIndex = 0
+        ' 
+        ' grpCourseSource
+        ' 
+        grpCourseSource.Controls.Add(pnlCourseSourcePagination)
+        grpCourseSource.Controls.Add(dgvCourseSource)
+        grpCourseSource.Controls.Add(pnlCourseSourceSearch)
+        grpCourseSource.Dock = DockStyle.Fill
+        grpCourseSource.Location = New Point(0, 0)
+        grpCourseSource.Name = "grpCourseSource"
+        grpCourseSource.Padding = New Padding(10)
+        grpCourseSource.Size = New Size(1266, 360)
+        grpCourseSource.TabIndex = 0
+        grpCourseSource.TabStop = False
+        grpCourseSource.Text = "Old DB (Source) - 강좌/수강내역"
+        ' 
+        ' pnlCourseSourcePagination
+        ' 
+        pnlCourseSourcePagination.AutoSize = True
+        pnlCourseSourcePagination.BackColor = Color.Transparent
+        pnlCourseSourcePagination.Dock = DockStyle.Bottom
+        pnlCourseSourcePagination.Location = New Point(10, 310)
+        pnlCourseSourcePagination.Name = "pnlCourseSourcePagination"
+        pnlCourseSourcePagination.Padding = New Padding(0, 10, 0, 0)
+        pnlCourseSourcePagination.Size = New Size(1246, 40)
+        pnlCourseSourcePagination.TabIndex = 2
+        ' 
+        ' dgvCourseSource
+        ' 
+        dgvCourseSource.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        dgvCourseSource.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells
+        dgvCourseSource.BackgroundColor = Color.FromArgb(CByte(26), CByte(27), CByte(38))
+        dgvCourseSource.Location = New Point(10, 70)
+        dgvCourseSource.Name = "dgvCourseSource"
+        dgvCourseSource.Size = New Size(1246, 235)
+        dgvCourseSource.TabIndex = 1
+        ' 
+        ' pnlCourseSourceSearch
+        ' 
+        pnlCourseSourceSearch.Controls.Add(btnCourseLoadExcel)
+        pnlCourseSourceSearch.Controls.Add(btnCourseSourceSearch)
+        pnlCourseSourceSearch.Controls.Add(dtpCourseEnd)
+        pnlCourseSourceSearch.Controls.Add(dtpCourseStart)
+        pnlCourseSourceSearch.Controls.Add(cboCourseLimit)
+        pnlCourseSourceSearch.Controls.Add(cboCourseSourceHo)
+        pnlCourseSourceSearch.Controls.Add(cboCourseSourceDong)
+        pnlCourseSourceSearch.Controls.Add(txtCourseSourceSearchName)
+        pnlCourseSourceSearch.Dock = DockStyle.Top
+        pnlCourseSourceSearch.Location = New Point(10, 26)
+        pnlCourseSourceSearch.Name = "pnlCourseSourceSearch"
+        pnlCourseSourceSearch.Size = New Size(1246, 40)
+        pnlCourseSourceSearch.TabIndex = 0
+        ' 
+        ' btnCourseLoadExcel
+        ' 
+        btnCourseLoadExcel.BackColor = Color.FromArgb(CByte(230), CByte(126), CByte(34))
+        btnCourseLoadExcel.BorderRadius = 15
+        btnCourseLoadExcel.CustomBaseColor = Color.FromArgb(CByte(230), CByte(126), CByte(34))
+        btnCourseLoadExcel.CustomBorderColor = Color.Transparent
+        btnCourseLoadExcel.CustomHoverColor = Color.FromArgb(CByte(243), CByte(156), CByte(18))
+        btnCourseLoadExcel.FlatAppearance.BorderSize = 0
+        btnCourseLoadExcel.FlatStyle = FlatStyle.Flat
+        btnCourseLoadExcel.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold)
+        btnCourseLoadExcel.ForeColor = Color.White
+        btnCourseLoadExcel.Location = New Point(800, 6)
+        btnCourseLoadExcel.Name = "btnCourseLoadExcel"
+        btnCourseLoadExcel.Size = New Size(124, 27)
+        btnCourseLoadExcel.TabIndex = 6
+        btnCourseLoadExcel.Text = "엑셀 불러오기"
+        btnCourseLoadExcel.UseVisualStyleBackColor = False
+        btnCourseLoadExcel.Visible = False
+        ' 
+        ' btnCourseSourceSearch
+        ' 
+        btnCourseSourceSearch.BackColor = Color.FromArgb(CByte(65), CByte(72), CByte(104))
+        btnCourseSourceSearch.BorderRadius = 15
+        btnCourseSourceSearch.CustomBaseColor = Color.FromArgb(CByte(65), CByte(72), CByte(104))
+        btnCourseSourceSearch.CustomBorderColor = Color.Transparent
+        btnCourseSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
+        btnCourseSourceSearch.FlatAppearance.BorderSize = 0
+        btnCourseSourceSearch.FlatStyle = FlatStyle.Flat
+        btnCourseSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
+        btnCourseSourceSearch.ForeColor = Color.White
+        btnCourseSourceSearch.Location = New Point(580, 6)
+        btnCourseSourceSearch.Name = "btnCourseSourceSearch"
+        btnCourseSourceSearch.Size = New Size(75, 27)
+        btnCourseSourceSearch.TabIndex = 0
+        btnCourseSourceSearch.Text = "조회"
+        btnCourseSourceSearch.UseVisualStyleBackColor = False
+        ' 
+        ' dtpCourseEnd
+        ' 
+        dtpCourseEnd.Format = DateTimePickerFormat.Short
+        dtpCourseEnd.Location = New Point(460, 8)
+        dtpCourseEnd.Name = "dtpCourseEnd"
+        dtpCourseEnd.Size = New Size(100, 23)
+        dtpCourseEnd.TabIndex = 7
+        ' 
+        ' dtpCourseStart
+        ' 
+        dtpCourseStart.Format = DateTimePickerFormat.Short
+        dtpCourseStart.Location = New Point(345, 8)
+        dtpCourseStart.Name = "dtpCourseStart"
+        dtpCourseStart.Size = New Size(100, 23)
+        dtpCourseStart.TabIndex = 6
+        ' 
+        ' cboCourseLimit
+        ' 
+        cboCourseLimit.DropDownStyle = ComboBoxStyle.DropDownList
+        cboCourseLimit.Items.AddRange(New Object() {"50", "100", "300", "500", "1000"})
+        cboCourseLimit.Location = New Point(265, 8)
+        cboCourseLimit.Name = "cboCourseLimit"
+        cboCourseLimit.Size = New Size(70, 23)
+        cboCourseLimit.TabIndex = 5
+        ' 
+        ' cboCourseSourceHo
+        ' 
+        cboCourseSourceHo.DropDownStyle = ComboBoxStyle.DropDownList
+        cboCourseSourceHo.FormattingEnabled = True
+        cboCourseSourceHo.Location = New Point(185, 8)
+        cboCourseSourceHo.Name = "cboCourseSourceHo"
+        cboCourseSourceHo.Size = New Size(70, 23)
+        cboCourseSourceHo.TabIndex = 4
+        ' 
+        ' cboCourseSourceDong
+        ' 
+        cboCourseSourceDong.DropDownStyle = ComboBoxStyle.DropDownList
+        cboCourseSourceDong.FormattingEnabled = True
+        cboCourseSourceDong.Location = New Point(110, 8)
+        cboCourseSourceDong.Name = "cboCourseSourceDong"
+        cboCourseSourceDong.Size = New Size(70, 23)
+        cboCourseSourceDong.TabIndex = 3
+        ' 
+        ' txtCourseSourceSearchName
+        ' 
+        txtCourseSourceSearchName.Location = New Point(5, 8)
+        txtCourseSourceSearchName.Name = "txtCourseSourceSearchName"
+        txtCourseSourceSearchName.PlaceholderText = "상품명 검색"
+        txtCourseSourceSearchName.Size = New Size(100, 23)
+        txtCourseSourceSearchName.TabIndex = 2
+        ' 
+        ' pnlCourseCenterAction
+        ' 
+        pnlCourseCenterAction.Controls.Add(btnMigrateCourse)
+        pnlCourseCenterAction.Dock = DockStyle.Bottom
+        pnlCourseCenterAction.Location = New Point(0, 360)
+        pnlCourseCenterAction.Name = "pnlCourseCenterAction"
+        pnlCourseCenterAction.Size = New Size(1266, 60)
+        pnlCourseCenterAction.TabIndex = 1
+        ' 
+        ' btnMigrateCourse
+        ' 
+        btnMigrateCourse.Anchor = AnchorStyles.Top
+        btnMigrateCourse.BackColor = Color.FromArgb(CByte(122), CByte(162), CByte(247))
+        btnMigrateCourse.BorderRadius = 15
+        btnMigrateCourse.CustomBaseColor = Color.FromArgb(CByte(65), CByte(72), CByte(104))
+        btnMigrateCourse.CustomBorderColor = Color.Transparent
+        btnMigrateCourse.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
+        btnMigrateCourse.FlatAppearance.BorderSize = 0
+        btnMigrateCourse.FlatStyle = FlatStyle.Flat
+        btnMigrateCourse.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold)
+        btnMigrateCourse.ForeColor = Color.White
+        btnMigrateCourse.Location = New Point(553, 12)
+        btnMigrateCourse.Name = "btnMigrateCourse"
+        btnMigrateCourse.Size = New Size(160, 35)
+        btnMigrateCourse.TabIndex = 0
+        btnMigrateCourse.Text = "강좌 이관하기"
+        btnMigrateCourse.UseVisualStyleBackColor = False
+        ' 
+        ' grpCourseTarget
+        ' 
+        grpCourseTarget.Controls.Add(pnlCourseTargetPagination)
+        grpCourseTarget.Controls.Add(dgvCourseTarget)
+        grpCourseTarget.Controls.Add(pnlCourseTargetSearch)
+        grpCourseTarget.Dock = DockStyle.Fill
+        grpCourseTarget.Location = New Point(0, 0)
+        grpCourseTarget.Name = "grpCourseTarget"
+        grpCourseTarget.Padding = New Padding(10)
+        grpCourseTarget.Size = New Size(1266, 307)
+        grpCourseTarget.TabIndex = 0
+        grpCourseTarget.TabStop = False
+        grpCourseTarget.Text = "New DB (Target) - 강좌내역"
+        ' 
+        ' pnlCourseTargetPagination
+        ' 
+        pnlCourseTargetPagination.AutoSize = True
+        pnlCourseTargetPagination.BackColor = Color.Transparent
+        pnlCourseTargetPagination.Dock = DockStyle.Bottom
+        pnlCourseTargetPagination.Location = New Point(10, 260)
+        pnlCourseTargetPagination.Name = "pnlCourseTargetPagination"
+        pnlCourseTargetPagination.Padding = New Padding(0, 10, 0, 0)
+        pnlCourseTargetPagination.Size = New Size(1246, 40)
+        pnlCourseTargetPagination.TabIndex = 2
+        ' 
+        ' dgvCourseTarget
+        ' 
+        dgvCourseTarget.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        dgvCourseTarget.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells
+        dgvCourseTarget.BackgroundColor = Color.FromArgb(CByte(26), CByte(27), CByte(38))
+        dgvCourseTarget.Location = New Point(10, 70)
+        dgvCourseTarget.Name = "dgvCourseTarget"
+        dgvCourseTarget.Size = New Size(1246, 185)
+        dgvCourseTarget.TabIndex = 1
+        ' 
+        ' pnlCourseTargetSearch
+        ' 
+        pnlCourseTargetSearch.Controls.Add(btnCourseTargetSearch)
+        pnlCourseTargetSearch.Controls.Add(txtCourseTargetSearchName)
+        pnlCourseTargetSearch.Controls.Add(cboCourseLimitTarget)
+        pnlCourseTargetSearch.Controls.Add(btnInitTargetCourse)
+        pnlCourseTargetSearch.Dock = DockStyle.Top
+        pnlCourseTargetSearch.Location = New Point(10, 26)
+        pnlCourseTargetSearch.Name = "pnlCourseTargetSearch"
+        pnlCourseTargetSearch.Size = New Size(1246, 40)
+        pnlCourseTargetSearch.TabIndex = 0
+        ' 
+        ' btnCourseTargetSearch
+        ' 
+        btnCourseTargetSearch.BackColor = Color.FromArgb(CByte(65), CByte(72), CByte(104))
+        btnCourseTargetSearch.BorderRadius = 15
+        btnCourseTargetSearch.CustomBaseColor = Color.FromArgb(CByte(65), CByte(72), CByte(104))
+        btnCourseTargetSearch.CustomBorderColor = Color.Transparent
+        btnCourseTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
+        btnCourseTargetSearch.FlatAppearance.BorderSize = 0
+        btnCourseTargetSearch.FlatStyle = FlatStyle.Flat
+        btnCourseTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
+        btnCourseTargetSearch.ForeColor = Color.White
+        btnCourseTargetSearch.Location = New Point(110, 6)
+        btnCourseTargetSearch.Name = "btnCourseTargetSearch"
+        btnCourseTargetSearch.Size = New Size(75, 27)
+        btnCourseTargetSearch.TabIndex = 0
+        btnCourseTargetSearch.Text = "조회"
+        btnCourseTargetSearch.UseVisualStyleBackColor = False
+        ' 
+        ' txtCourseTargetSearchName
+        ' 
+        txtCourseTargetSearchName.Location = New Point(5, 8)
+        txtCourseTargetSearchName.Name = "txtCourseTargetSearchName"
+        txtCourseTargetSearchName.PlaceholderText = "회원명 검색"
+        txtCourseTargetSearchName.Size = New Size(100, 23)
+        txtCourseTargetSearchName.TabIndex = 1
+        ' 
+        ' cboCourseLimitTarget
+        ' 
+        cboCourseLimitTarget.DropDownStyle = ComboBoxStyle.DropDownList
+        cboCourseLimitTarget.Items.AddRange(New Object() {"50", "100", "300", "500", "1000"})
+        cboCourseLimitTarget.Location = New Point(190, 8)
+        cboCourseLimitTarget.Name = "cboCourseLimitTarget"
+        cboCourseLimitTarget.Size = New Size(70, 23)
+        cboCourseLimitTarget.TabIndex = 2
+        ' 
+        ' btnInitTargetCourse
+        ' 
+        btnInitTargetCourse.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnInitTargetCourse.BackColor = Color.Transparent
+        btnInitTargetCourse.BorderRadius = 15
+        btnInitTargetCourse.CustomBaseColor = Color.FromArgb(CByte(65), CByte(72), CByte(104))
+        btnInitTargetCourse.CustomBorderColor = Color.Transparent
+        btnInitTargetCourse.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
+        btnInitTargetCourse.FlatStyle = FlatStyle.Flat
+        btnInitTargetCourse.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
+        btnInitTargetCourse.ForeColor = Color.White
+        btnInitTargetCourse.Location = New Point(1060, 6)
+        btnInitTargetCourse.Name = "btnInitTargetCourse"
+        btnInitTargetCourse.Size = New Size(180, 27)
+        btnInitTargetCourse.TabIndex = 3
+        btnInitTargetCourse.Text = "강좌 초기화(데이터 삭제)"
+        btnInitTargetCourse.UseVisualStyleBackColor = False
         ' 
         ' tabLocker
         ' 
@@ -513,6 +835,22 @@ Partial Class Form1
         CType(dgvTarget, ComponentModel.ISupportInitialize).EndInit()
         pnlTargetSearch.ResumeLayout(False)
         pnlTargetSearch.PerformLayout()
+        tabCourse.ResumeLayout(False)
+        splitContainerCourse.Panel1.ResumeLayout(False)
+        splitContainerCourse.Panel2.ResumeLayout(False)
+        CType(splitContainerCourse, ComponentModel.ISupportInitialize).EndInit()
+        splitContainerCourse.ResumeLayout(False)
+        grpCourseSource.ResumeLayout(False)
+        grpCourseSource.PerformLayout()
+        CType(dgvCourseSource, ComponentModel.ISupportInitialize).EndInit()
+        pnlCourseSourceSearch.ResumeLayout(False)
+        pnlCourseSourceSearch.PerformLayout()
+        pnlCourseCenterAction.ResumeLayout(False)
+        grpCourseTarget.ResumeLayout(False)
+        grpCourseTarget.PerformLayout()
+        CType(dgvCourseTarget, ComponentModel.ISupportInitialize).EndInit()
+        pnlCourseTargetSearch.ResumeLayout(False)
+        pnlCourseTargetSearch.PerformLayout()
         CType(picPreview, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
 
@@ -521,7 +859,7 @@ Partial Class Form1
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents cboCompany As System.Windows.Forms.ComboBox
     Friend WithEvents Label2 As System.Windows.Forms.Label
-    
+
     ' Redesign Controls
     Friend WithEvents pnlGlobalTop As System.Windows.Forms.Panel
     Friend WithEvents tabMain As System.Windows.Forms.TabControl
@@ -529,7 +867,7 @@ Partial Class Form1
     Friend WithEvents tabCourse As System.Windows.Forms.TabPage
     Friend WithEvents tabLocker As System.Windows.Forms.TabPage
     Friend WithEvents tabLockerPW As System.Windows.Forms.TabPage
-    
+
     ' Source Search Controls
     Friend WithEvents pnlSourceSearch As System.Windows.Forms.Panel
     Friend WithEvents txtSourceSearchName As System.Windows.Forms.TextBox
@@ -537,17 +875,17 @@ Partial Class Form1
     Friend WithEvents cboSourceHo As System.Windows.Forms.ComboBox
     Friend WithEvents btnSourceSearch As ModernButton
     Friend WithEvents cboLimit As ComboBox
-    
+
     ' Target Search Controls
     Friend WithEvents pnlTargetSearch As System.Windows.Forms.Panel
     Friend WithEvents txtTargetSearchName As System.Windows.Forms.TextBox
     Friend WithEvents btnTargetSearch As ModernButton
     Friend WithEvents cboLimitTarget As ComboBox
     Friend WithEvents btnInitTargetMember As ModernButton
-    
+
     Friend WithEvents pnlSourcePagination As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents pnlTargetPagination As System.Windows.Forms.FlowLayoutPanel
-    
+
     Friend WithEvents splitContainerData As System.Windows.Forms.SplitContainer
     Friend WithEvents pnlCenterAction As System.Windows.Forms.Panel
     Friend WithEvents grpSource As System.Windows.Forms.GroupBox
@@ -558,4 +896,31 @@ Partial Class Form1
     Friend WithEvents btnLoadExcel As ModernButton
     Friend WithEvents btnSetting As ModernButton
     Friend WithEvents picPreview As PictureBox
- End Class
+
+    ' Course Migration Controls
+    Friend WithEvents splitContainerCourse As SplitContainer
+    Friend WithEvents grpCourseSource As GroupBox
+    Friend WithEvents dgvCourseSource As DataGridView
+    Friend WithEvents pnlCourseSourceSearch As Panel
+    Friend WithEvents btnCourseSourceSearch As ModernButton
+    Friend WithEvents btnCourseLoadExcel As ModernButton
+    Friend WithEvents txtCourseSourceSearchName As TextBox
+    Friend WithEvents cboCourseSourceDong As ComboBox
+    Friend WithEvents cboCourseSourceHo As ComboBox
+    Friend WithEvents cboCourseLimit As ComboBox
+    Friend WithEvents dtpCourseStart As DateTimePicker
+    Friend WithEvents dtpCourseEnd As DateTimePicker
+    Friend WithEvents pnlCourseSourcePagination As FlowLayoutPanel
+    
+    Friend WithEvents pnlCourseCenterAction As Panel
+    Friend WithEvents btnMigrateCourse As ModernButton
+    
+    Friend WithEvents grpCourseTarget As GroupBox
+    Friend WithEvents dgvCourseTarget As DataGridView
+    Friend WithEvents pnlCourseTargetSearch As Panel
+    Friend WithEvents btnCourseTargetSearch As ModernButton
+    Friend WithEvents txtCourseTargetSearchName As TextBox
+    Friend WithEvents cboCourseLimitTarget As ComboBox
+    Friend WithEvents btnInitTargetCourse As ModernButton
+    Friend WithEvents pnlCourseTargetPagination As FlowLayoutPanel
+End Class

@@ -25,7 +25,7 @@ Public Class FrmMessage
     End Sub
 
     Private Sub SetRoundedRegion()
-        Dim radius As Integer = 12 ' 25 -> 12 좀 더 깔끔하게 축소
+        Dim radius As Integer = 15 ' 12 -> 15 (More Rounded)
         Dim path As New GraphicsPath()
         ' Region은 폼 전체 크기 기준
         Dim rect As New Rectangle(0, 0, Me.Width, Me.Height)
@@ -46,7 +46,7 @@ Public Class FrmMessage
         Dim g As Graphics = e.Graphics
         g.SmoothingMode = SmoothingMode.AntiAlias
 
-        Dim radius As Integer = 12 ' Radius 일치
+        Dim radius As Integer = 15 ' Radius 일치
         ' Pen 두께(2)를 고려하여 Rect 조정 (안쪽으로 1px 들어와야 짤리지 않음)
         Dim rect As New Rectangle(1, 1, Me.Width - 2, Me.Height - 2)
         Dim path As New GraphicsPath()

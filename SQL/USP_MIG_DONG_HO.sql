@@ -98,3 +98,33 @@ BEGIN
         SELECT 'ERROR' AS Result, 0 AS MigratedCount, @ErrorMsg AS Message;
     END CATCH
 END
+
+
+/*  디버깅용 쿼리 지우지말것 
+
+
+-- 컨버팅 테스트 데이타 
+
+select * from T_COMPANY_GANGJWA_BUNRYU where F_COMPANY_IDX = 1
+select * from T_COMPANY_GANGJWA_CODE where F_COMPANY_IDX = 1
+
+select * from T_GANGJWA_MAIN where F_COMPANY_IDX = 1
+select * from T_GANGJWA_MAIN_AMOUNT where F_COMPANY_IDX = 1
+select * from T_GANGJWA_MAIN_CODE_OPTION where F_COMPANY_IDX = 1
+
+select * from T_ORDER where F_COMPANY_IDX = 1
+select * from T_ORDER_DETAIL where F_COMPANY_IDX = 1
+select * from T_ORDER_DETAIL_GANGJWA_INFO where F_COMPANY_IDX = 1
+select * from T_ORDER_GANGJWA_MAIN where F_COMPANY_IDX = 1
+
+
+-- 기존 샘플 데이타 
+select top 5  * from T_ORDER where F_COMPANY_IDX = 12
+select top 5 * from T_ORDER_DETAIL where F_COMPANY_IDX = 12
+select top 5 * from T_ORDER_DETAIL_GANGJWA_INFO where F_COMPANY_IDX = 12 order by 1 desc
+select top 5 * from T_ORDER_GANGJWA_MAIN where F_COMPANY_IDX = 12
+
+
+
+
+*/

@@ -107,13 +107,16 @@ Public Class ModernButton
         
         ' 1. 부모 색상으로 배경 채우기 (블랙 아티팩트 방지)
         ' 투명 배경을 시뮬레이션하기 위해 부모의 BackColor로 전체 영역을 먼저 칠함
-        If Me.Parent IsNot Nothing Then
-            Using bgBrush As New SolidBrush(Me.Parent.BackColor)
-                g.FillRectangle(bgBrush, Me.ClientRectangle)
-            End Using
-        Else
-            g.Clear(Color.FromArgb(26, 27, 38)) ' Default Theme Dark Background
+        ' 1. 부모 색상으로 배경 채우기 (블랙 아티팩트 방지)
+        ' 투명 배경을 시뮬레이션하기 위해 부모의 BackColor로 전체 영역을 먼저 칠함
+        ' (수정) 부모가 Transparent이면 그리기 처리가 안되므로, 테마 배경색으로 강제 Clear
+        Dim clearColor As Color = Color.FromArgb(26, 27, 38) ' Default Theme Dark Background
+        
+        If Me.Parent IsNot Nothing AndAlso Me.Parent.BackColor <> Color.Transparent Then
+            clearColor = Me.Parent.BackColor
         End If
+        
+        g.Clear(clearColor)
         
         ' 2. 버튼 상태에 따른 색상 결정
         Dim bg As Color = _baseColor
@@ -154,7 +157,7 @@ Public Class ModernButton
         ' TextRenderer는 GDI 방식, DrawString은 GDI+ 방식. 
         ' 배경이 복잡하지 않으므로 AntiAlias + DrawString 조합이 더 깔끔할 수 있으나, 
         ' 레이아웃 정확도를 위해 TextRenderer 유지하되 플래그 조정
-        TextRenderer.DrawText(g, Me.Text, Me.Font, textRect, textColor, TextFormatFlags.HorizontalCenter Or TextFormatFlags.VerticalCenter Or TextFormatFlags.WordBreak)
+        TextRenderer.DrawText(g, Me.Text, Me.Font, textRect, textColor, TextFormatFlags.HorizontalCenter Or TextFormatFlags.VerticalCenter Or TextFormatFlags.SingleLine)
     End Sub
 
     Private Function GetFigurePath(rect As Rectangle, radius As Integer) As GraphicsPath
