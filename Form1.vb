@@ -156,7 +156,6 @@ Public Class Form1
                 ' 2026-01-12 11:00:00 Source DB 기반 조회 조건 초기화 (동 리스트)
                 LoadDongList()
                 LoadCourseDongList() ' 강좌 탭 동 리스트 로드
-                LoadCourseDongList() ' 강좌 탭 동 리스트 로드
             Else
                 Log("Error: DB 접속 실패. 설정을 확인하세요.")
                 btnMigrateMember.Enabled = False
