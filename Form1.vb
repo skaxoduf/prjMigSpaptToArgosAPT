@@ -52,6 +52,39 @@ Public Class Form1
         dtpCourseEnd.Value = DateTime.Now
         txtCourseSourceSearchName.PlaceholderText = "회원명 검색"
 
+        ' 사물함 탭 초기화
+        cboLockerLimit.SelectedIndex = 1 ' Default 100
+        cboLockerLimitTarget.SelectedIndex = 1
+        txtLockerSourceSearchName.PlaceholderText = "회원명 검색"
+
+        ' 상품 탭 초기화
+        cboProductLimit.SelectedIndex = 0 ' Default 50
+        cboProductLimitTarget.SelectedIndex = 1 ' Default 100
+        dtpProductStart.Value = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)
+        dtpProductEnd.Value = DateTime.Now
+        txtProductSourceSearchName.PlaceholderText = "상품명 검색"
+
+        ' 일반시설 탭 초기화
+        cboGeneralLimit.SelectedIndex = 0 ' Default 50
+        cboGeneralLimitTarget.SelectedIndex = 1
+        dtpGeneralStart.Value = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)
+        dtpGeneralEnd.Value = DateTime.Now
+        txtGeneralSourceSearchName.PlaceholderText = "일반시설명 검색"
+
+        ' 숙박시설 탭 초기화
+        cboAccommodationLimit.SelectedIndex = 0 ' Default 50
+        cboAccommodationLimitTarget.SelectedIndex = 1
+        dtpAccommodationStart.Value = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)
+        dtpAccommodationEnd.Value = DateTime.Now
+        txtAccommodationSourceSearchName.PlaceholderText = "숙박시설명 검색"
+
+        ' 공간시설 탭 초기화
+        cboSpaceLimit.SelectedIndex = 0 ' Default 50
+        cboSpaceLimitTarget.SelectedIndex = 1
+        dtpSpaceStart.Value = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)
+        dtpSpaceEnd.Value = DateTime.Now
+        txtSpaceSourceSearchName.PlaceholderText = "공간시설명 검색"
+
 
         ' 2026-01-13 (Changes) Layout Order
         pnlCenterAction.SendToBack()
@@ -66,12 +99,32 @@ Public Class Form1
         UiHelper.ApplyGridTheme(dgvTarget)
         UiHelper.ApplyGridTheme(dgvCourseSource)
         UiHelper.ApplyGridTheme(dgvCourseTarget)
+        UiHelper.ApplyGridTheme(dgvLockerSource)
+        UiHelper.ApplyGridTheme(dgvLockerTarget)
+        UiHelper.ApplyGridTheme(dgvProductSource)
+        UiHelper.ApplyGridTheme(dgvProductTarget)
+        UiHelper.ApplyGridTheme(dgvGeneralSource)
+        UiHelper.ApplyGridTheme(dgvGeneralTarget)
+        UiHelper.ApplyGridTheme(dgvAccommodationSource)
+        UiHelper.ApplyGridTheme(dgvAccommodationTarget)
+        UiHelper.ApplyGridTheme(dgvSpaceSource)
+        UiHelper.ApplyGridTheme(dgvSpaceTarget)
 
         ' 2026-01-18 GroupBox Title Color (Readability Fix)
         grpCourseSource.ForeColor = Color.FromArgb(192, 202, 245) ' Tokyo Night Text
         grpCourseTarget.ForeColor = Color.FromArgb(192, 202, 245)
         grpSource.ForeColor = Color.FromArgb(192, 202, 245)
         grpTarget.ForeColor = Color.FromArgb(192, 202, 245)
+        grpLockerSource.ForeColor = Color.FromArgb(192, 202, 245)
+        grpLockerTarget.ForeColor = Color.FromArgb(192, 202, 245)
+        grpProductSource.ForeColor = Color.FromArgb(192, 202, 245)
+        grpProductTarget.ForeColor = Color.FromArgb(192, 202, 245)
+        grpGeneralSource.ForeColor = Color.FromArgb(192, 202, 245)
+        grpGeneralTarget.ForeColor = Color.FromArgb(192, 202, 245)
+        grpAccommodationSource.ForeColor = Color.FromArgb(192, 202, 245)
+        grpAccommodationTarget.ForeColor = Color.FromArgb(192, 202, 245)
+        grpSpaceSource.ForeColor = Color.FromArgb(192, 202, 245)
+        grpSpaceTarget.ForeColor = Color.FromArgb(192, 202, 245)
 
 
         ' 2026-01-13 (Removed) CustomizeButtons - Designer 제어를 위해 제거
@@ -156,6 +209,11 @@ Public Class Form1
                 ' 2026-01-12 11:00:00 Source DB 기반 조회 조건 초기화 (동 리스트)
                 LoadDongList()
                 LoadCourseDongList() ' 강좌 탭 동 리스트 로드
+                LoadLockerDongList() ' 사물함 탭 동 리스트 로드
+                LoadProductDongList() ' 상품 탭 동 리스트 로드
+                LoadGeneralDongList() ' 일반시설 탭 동 리스트 로드
+                LoadAccommodationDongList() ' 숙박시설 탭 동 리스트 로드
+                LoadSpaceDongList() ' 공간시설 탭 동 리스트 로드
             Else
                 Log("Error: DB 접속 실패. 설정을 확인하세요.")
                 btnMigrateMember.Enabled = False
@@ -585,7 +643,7 @@ Public Class Form1
     End Sub
 
     ' 2026-01-12 16:35:00 Row Numbering Implementation
-    Private Sub dgv_RowPostPaint(sender As Object, e As DataGridViewRowPostPaintEventArgs) Handles dgvSource.RowPostPaint, dgvTarget.RowPostPaint, dgvCourseSource.RowPostPaint, dgvCourseTarget.RowPostPaint, dgvCourseSource.RowPostPaint, dgvCourseTarget.RowPostPaint
+    Private Sub dgv_RowPostPaint(sender As Object, e As DataGridViewRowPostPaintEventArgs) Handles dgvSource.RowPostPaint, dgvTarget.RowPostPaint, dgvCourseSource.RowPostPaint, dgvCourseTarget.RowPostPaint, dgvLockerSource.RowPostPaint, dgvLockerTarget.RowPostPaint, dgvProductSource.RowPostPaint, dgvProductTarget.RowPostPaint, dgvGeneralSource.RowPostPaint, dgvGeneralTarget.RowPostPaint, dgvAccommodationSource.RowPostPaint, dgvAccommodationTarget.RowPostPaint, dgvSpaceSource.RowPostPaint, dgvSpaceTarget.RowPostPaint
         Dim dgv As DataGridView = DirectCast(sender, DataGridView)
         Dim rowIdx As String = (e.RowIndex + 1).ToString()
 
@@ -631,6 +689,36 @@ Public Class Form1
     Private _currentCourseTargetPage As Integer = 1
     Private _courseSourcePageSize As Integer = 50
     Private _courseTargetPageSize As Integer = 100
+
+    ' 사물함 탭 페이징 변수
+    Private _currentLockerSourcePage As Integer = 1
+    Private _currentLockerTargetPage As Integer = 1
+    Private _lockerSourcePageSize As Integer = 100
+    Private _lockerTargetPageSize As Integer = 100
+
+    ' 상품 탭 페이징 변수
+    Private _currentProductSourcePage As Integer = 1
+    Private _currentProductTargetPage As Integer = 1
+    Private _productSourcePageSize As Integer = 50
+    Private _productTargetPageSize As Integer = 100
+
+    ' 일반시설 탭 페이징 변수
+    Private _currentGeneralSourcePage As Integer = 1
+    Private _currentGeneralTargetPage As Integer = 1
+    Private _generalSourcePageSize As Integer = 50
+    Private _generalTargetPageSize As Integer = 100
+
+    ' 숙박시설 탭 페이징 변수
+    Private _currentAccommodationSourcePage As Integer = 1
+    Private _currentAccommodationTargetPage As Integer = 1
+    Private _accommodationSourcePageSize As Integer = 50
+    Private _accommodationTargetPageSize As Integer = 100
+
+    ' 공간시설 탭 페이징 변수
+    Private _currentSpaceSourcePage As Integer = 1
+    Private _currentSpaceTargetPage As Integer = 1
+    Private _spaceSourcePageSize As Integer = 50
+    Private _spaceTargetPageSize As Integer = 100
 
     Private Sub cboCourseLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboCourseLimit.SelectedIndexChanged
         If Not _isLoaded Then Return
@@ -1132,6 +1220,1168 @@ Public Class Form1
 
             Catch ex As Exception
                 Log("강좌 초기화 중 오류: " & ex.Message)
+            Finally
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+            End Try
+        End If
+    End Sub
+
+    ' =============================================================
+    ' 사물함(Locker) 이관 관련 코드 (템플릿: 강좌 탭)
+    ' TODO: 테이블명 확인 필요
+    '   - Source DB: T_Locker, T_LockerRent 등
+    '   - Target DB: T_ORDER_DETAIL_LOCKER_INFO 또는 T_LOCKER
+    ' TODO: SP 파일명
+    '   - 이관: USP_MIG_OLD_TO_NEW_LOCKER.sql
+    '   - 초기화: USP_RESET_LOCKER_MIGRATION.sql
+    ' =============================================================
+
+    ' Limit 변경 이벤트
+    Private Sub cboLockerLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLockerLimit.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 100
+        If cboLockerLimit.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboLockerLimit.SelectedItem.ToString(), val) Then
+            _lockerSourcePageSize = val
+        End If
+    End Sub
+
+    Private Sub cboLockerLimitTarget_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLockerLimitTarget.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 100
+        If cboLockerLimitTarget.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboLockerLimitTarget.SelectedItem.ToString(), val) Then
+            _lockerTargetPageSize = val
+        End If
+    End Sub
+
+    ' 동 리스트 로드
+    Private Sub LoadLockerDongList()
+        MigrationUtils.LoadDongList(_sourceHelper, cboLockerSourceDong, AddressOf Log)
+    End Sub
+
+    ' 동 선택 시 호 리스트 로드
+    Private Sub cboLockerSourceDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLockerSourceDong.SelectedIndexChanged
+        If _sourceHelper Is Nothing OrElse cboLockerSourceDong.SelectedItem Is Nothing Then Return
+        Dim selectedDong As String = cboLockerSourceDong.SelectedItem.ToString()
+        MigrationUtils.LoadHoList(_sourceHelper, selectedDong, cboLockerSourceHo, AddressOf Log)
+    End Sub
+
+    ' Source 조회 버튼
+    Private Sub btnLockerSourceSearch_Click(sender As Object, e As EventArgs) Handles btnLockerSourceSearch.Click
+        _currentLockerSourcePage = 1
+        SearchLockerSource()
+    End Sub
+
+    ' Target 조회 버튼
+    Private Sub btnLockerTargetSearch_Click(sender As Object, e As EventArgs) Handles btnLockerTargetSearch.Click
+        _currentLockerTargetPage = 1
+        SearchLockerTarget()
+    End Sub
+
+    ' 엑셀 불러오기 (스텁)
+    Private Sub btnLockerLoadExcel_Click(sender As Object, e As EventArgs) Handles btnLockerLoadExcel.Click
+        FrmMessage.ShowMsg("아직 구현되지 않았습니다. DB 조회를 이용해주세요.", "알림")
+    End Sub
+
+    ' 검색창 엔터키
+    Private Sub txtLockerSourceSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtLockerSourceSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnLockerSourceSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub txtLockerTargetSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtLockerTargetSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnLockerTargetSearch.PerformClick()
+        End If
+    End Sub
+
+    ' 페이지 버튼 클릭
+    Private Sub LockerSourcePageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentLockerSourcePage = Convert.ToInt32(btn.Tag)
+        btnLockerSourceSearch.PerformClick()
+    End Sub
+
+    Private Sub LockerTargetPageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentLockerTargetPage = Convert.ToInt32(btn.Tag)
+        btnLockerTargetSearch.PerformClick()
+    End Sub
+
+    ' 페이지네이션 렌더
+    Private Sub RenderLockerSourcePagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlLockerSourcePagination, totalRows, _lockerSourcePageSize, _currentLockerSourcePage, AddressOf LockerSourcePageButton_Click)
+    End Sub
+
+    Private Sub RenderLockerTargetPagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlLockerTargetPagination, totalRows, _lockerTargetPageSize, _currentLockerTargetPage, AddressOf LockerTargetPageButton_Click)
+    End Sub
+
+    ' Source 조회
+    Private Sub SearchLockerSource()
+        If _sourceHelper Is Nothing Then Return
+
+        Try
+            ' TODO: 테이블명 확인 (T_Locker, T_LockerRent 등)
+            Dim searchName As String = txtLockerSourceSearchName.Text.Trim()
+            Dim dong As String = If(cboLockerSourceDong.SelectedItem IsNot Nothing, cboLockerSourceDong.SelectedItem.ToString(), "전체")
+            Dim ho As String = If(cboLockerSourceHo.SelectedItem IsNot Nothing, cboLockerSourceHo.SelectedItem.ToString(), "전체")
+
+            Dim whereClause As String = "1=1"
+
+            ' 이름 검색
+            If Not String.IsNullOrEmpty(searchName) Then
+                whereClause &= String.Format(" AND (MbName LIKE '%{0}%')", searchName)
+            End If
+
+            ' 동/호 검색
+            If dong <> "전체" Then
+                whereClause &= String.Format(" AND DongAddr = '{0}'", dong)
+            End If
+            If ho <> "전체" Then
+                whereClause &= String.Format(" AND HoAddr = '{0}'", ho)
+            End If
+
+            ' Count Query
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_Member WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount As DataTable = _sourceHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+
+            ' Paging Query
+            Dim offset As Integer = (_currentLockerSourcePage - 1) * _lockerSourcePageSize
+            Dim query As String = String.Format("SELECT * FROM T_Member WHERE {0} ORDER BY MbNo DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY",
+                                                whereClause, offset, _lockerSourcePageSize)
+
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+            dgvLockerSource.DataSource = dt
+            grpLockerSource.Text = String.Format("Old DB (Source) - 사물함내역 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentLockerSourcePage)
+
+            RenderLockerSourcePagination(totalRows)
+
+        Catch ex As Exception
+            Log("사물함 소스 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    ' Target 조회
+    Private Sub SearchLockerTarget()
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+
+        Try
+            ' TODO: 테이블명 확인 (T_ORDER_DETAIL_LOCKER_INFO 등)
+            Dim searchName As String = txtLockerTargetSearchName.Text.Trim()
+            Dim whereClause As String = String.Format("F_COMPANY_CODE = '{0}'", selCompanyCode)
+
+            If Not String.IsNullOrEmpty(searchName) Then
+                whereClause &= String.Format(" AND (F_MEM_NAME LIKE '%{0}%')", searchName)
+            End If
+
+            ' Count
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_MEM WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+
+            ' Paging
+            Dim offset As Integer = (_currentLockerTargetPage - 1) * _lockerTargetPageSize
+            Dim query As String = String.Format("SELECT * FROM T_MEM WHERE {0} ORDER BY F_IDX DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY",
+                                                whereClause, offset, _lockerTargetPageSize)
+
+            Dim dt As DataTable = _dbHelper.ExecuteQuery(query)
+            dgvLockerTarget.DataSource = dt
+            grpLockerTarget.Text = String.Format("New DB (Target) - 사물함 이력 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentLockerTargetPage)
+
+            RenderLockerTargetPagination(totalRows)
+
+        Catch ex As Exception
+            Log("사물함 타겟 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    ' 이관 버튼
+    Private Sub btnMigrateLocker_Click(sender As Object, e As EventArgs) Handles btnMigrateLocker.Click
+        If Not MigrationUtils.ValidateCompanySelection(cboCompany) Then Return
+        If Not MigrationUtils.ValidateDbSettings(_targetDbName, _sourceDbName) Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+
+        ' TODO: 테이블명 확인
+        Dim targetCount As Integer = 0
+        Try
+            Dim countQuery As String = String.Format("SELECT COUNT(*) FROM T_MEM WHERE F_COMPANY_CODE = '{0}'", selCompanyCode)
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                targetCount = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+        Catch ex As Exception
+            Log("데이터 확인 중 오류 발생: " & ex.Message)
+            Return
+        End Try
+
+        If Not MigrationUtils.AskMigrationConfirmation(targetCount, selCompanyName, "사물함") Then Return
+
+        Log("=== 사물함 이관 시작 ===")
+        If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+
+        Try
+            ' TODO: SP 파일명 확인
+            If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_MIG_OLD_TO_NEW_LOCKER.sql"}, AddressOf Log) Then
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                Return
+            End If
+
+            Log(">>> 사물함 통합 이관 프로시저 실행 중 (시간이 소요될 수 있습니다)...")
+            Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(String.Format("EXEC USP_MIG_OLD_TO_NEW_LOCKER @P_CompanyCode='{0}', @OldDbName='{1}'", selCompanyCode, _sourceDbName))
+
+            If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                Dim res As String = result.Rows(0)(0).ToString()
+                Log("실행 결과: " & res)
+            End If
+
+            Log("=== 사물함 이관 완료 ===")
+            btnLockerTargetSearch.PerformClick()
+
+        Catch ex As Exception
+            Log("사물함 이관 중 오류: " & ex.Message)
+        Finally
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+        End Try
+    End Sub
+
+    ' 초기화 버튼
+    Private Sub btnInitTargetLocker_Click(sender As Object, e As EventArgs) Handles btnInitTargetLocker.Click
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+
+        If MigrationUtils.AskDeleteConfirmation(selCompanyName, "사물함") Then
+
+            Log("=== 사물함 데이터 초기화 시작 ===")
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+
+            Try
+                ' TODO: SP 파일명 확인
+                If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_RESET_LOCKER_MIGRATION.sql"}, AddressOf Log) Then
+                    If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                    Return
+                End If
+
+                Dim query As String = String.Format("EXEC USP_RESET_LOCKER_MIGRATION @P_CompanyCode='{0}'", selCompanyCode)
+                Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(query)
+
+                If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                    Dim res As String = result.Rows(0)("Result").ToString()
+                    Dim msg As String = result.Rows(0)("Msg").ToString()
+                    Log(String.Format("결과: {0} ({1})", res, msg))
+                End If
+
+                Log("=== 사물함 데이터 초기화 완료 ===")
+                btnLockerTargetSearch.PerformClick()
+
+            Catch ex As Exception
+                Log("사물함 초기화 중 오류: " & ex.Message)
+            Finally
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+            End Try
+        End If
+    End Sub
+
+    ' =============================================================
+    ' 상품(Product) 이관 관련 코드 (템플릿: 강좌 탭)
+    ' TODO: 테이블명 확인 필요
+    '   - Source DB: T_Product, T_TrsInout (rbcode 조건 확인)
+    '   - Target DB: T_ORDER_DETAIL_PRODUCT_INFO 또는 T_PRODUCT
+    ' TODO: SP 파일명
+    '   - 이관: USP_MIG_OLD_TO_NEW_PRODUCT.sql
+    '   - 초기화: USP_RESET_PRODUCT_MIGRATION.sql
+    ' =============================================================
+
+    ' Limit 변경 이벤트
+    Private Sub cboProductLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboProductLimit.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 50
+        If cboProductLimit.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboProductLimit.SelectedItem.ToString(), val) Then
+            _productSourcePageSize = val
+        End If
+    End Sub
+
+    Private Sub cboProductLimitTarget_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboProductLimitTarget.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 100
+        If cboProductLimitTarget.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboProductLimitTarget.SelectedItem.ToString(), val) Then
+            _productTargetPageSize = val
+        End If
+    End Sub
+
+    ' 동 리스트 로드
+    Private Sub LoadProductDongList()
+        MigrationUtils.LoadDongList(_sourceHelper, cboProductSourceDong, AddressOf Log)
+    End Sub
+
+    ' 동 선택 시 호 리스트 로드
+    Private Sub cboProductSourceDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboProductSourceDong.SelectedIndexChanged
+        If _sourceHelper Is Nothing OrElse cboProductSourceDong.SelectedItem Is Nothing Then Return
+        Dim selectedDong As String = cboProductSourceDong.SelectedItem.ToString()
+        MigrationUtils.LoadHoList(_sourceHelper, selectedDong, cboProductSourceHo, AddressOf Log)
+    End Sub
+
+    ' Source 조회 버튼
+    Private Sub btnProductSourceSearch_Click(sender As Object, e As EventArgs) Handles btnProductSourceSearch.Click
+        _currentProductSourcePage = 1
+        SearchProductSource()
+    End Sub
+
+    ' Target 조회 버튼
+    Private Sub btnProductTargetSearch_Click(sender As Object, e As EventArgs) Handles btnProductTargetSearch.Click
+        _currentProductTargetPage = 1
+        SearchProductTarget()
+    End Sub
+
+    ' 엑셀 불러오기 (스텁)
+    Private Sub btnProductLoadExcel_Click(sender As Object, e As EventArgs) Handles btnProductLoadExcel.Click
+        FrmMessage.ShowMsg("아직 구현되지 않았습니다. DB 조회를 이용해주세요.", "알림")
+    End Sub
+
+    ' 검색창 엔터키
+    Private Sub txtProductSourceSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtProductSourceSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnProductSourceSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub txtProductTargetSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtProductTargetSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnProductTargetSearch.PerformClick()
+        End If
+    End Sub
+
+    ' 페이지 버튼 클릭
+    Private Sub ProductSourcePageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentProductSourcePage = Convert.ToInt32(btn.Tag)
+        btnProductSourceSearch.PerformClick()
+    End Sub
+
+    Private Sub ProductTargetPageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentProductTargetPage = Convert.ToInt32(btn.Tag)
+        btnProductTargetSearch.PerformClick()
+    End Sub
+
+    ' 페이지네이션 렌더
+    Private Sub RenderProductSourcePagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlProductSourcePagination, totalRows, _productSourcePageSize, _currentProductSourcePage, AddressOf ProductSourcePageButton_Click)
+    End Sub
+
+    Private Sub RenderProductTargetPagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlProductTargetPagination, totalRows, _productTargetPageSize, _currentProductTargetPage, AddressOf ProductTargetPageButton_Click)
+    End Sub
+
+    ' Source 조회
+    Private Sub SearchProductSource()
+        If _sourceHelper Is Nothing Then Return
+
+        Try
+            ' TODO: 테이블명 확인 (T_Product, T_TrsInout 등, rbcode 조건 확인)
+            Dim startDate As String = dtpProductStart.Value.ToString("yyyy-MM-dd")
+            Dim endDate As String = dtpProductEnd.Value.ToString("yyyy-MM-dd")
+            Dim searchName As String = txtProductSourceSearchName.Text.Trim()
+            Dim dong As String = If(cboProductSourceDong.SelectedItem IsNot Nothing, cboProductSourceDong.SelectedItem.ToString(), "전체")
+            Dim ho As String = If(cboProductSourceHo.SelectedItem IsNot Nothing, cboProductSourceHo.SelectedItem.ToString(), "전체")
+
+            Dim whereClause As String = String.Format("A.TrsDate BETWEEN '{0}' AND '{1}'", startDate, endDate)
+
+            ' 이름 검색
+            If Not String.IsNullOrEmpty(searchName) Then
+                whereClause &= String.Format(" AND (B.MbName LIKE '%{0}%')", searchName)
+            End If
+
+            ' 동/호 검색
+            If dong <> "전체" Then
+                whereClause &= String.Format(" AND B.DongAddr = '{0}'", dong)
+            End If
+            If ho <> "전체" Then
+                whereClause &= String.Format(" AND B.HoAddr = '{0}'", ho)
+            End If
+
+            ' Count Query
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount As DataTable = _sourceHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+
+            ' Paging Query
+            Dim offset As Integer = (_currentProductSourcePage - 1) * _productSourcePageSize
+            Dim query As String = String.Format("SELECT A.*, B.DongAddr, B.HoAddr, B.MbName FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE {0} ORDER BY A.TrsDate DESC, A.TrsNo DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY",
+                                                whereClause, offset, _productSourcePageSize)
+
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+            dgvProductSource.DataSource = dt
+            grpProductSource.Text = String.Format("Old DB (Source) - 상품내역 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentProductSourcePage)
+
+            RenderProductSourcePagination(totalRows)
+
+        Catch ex As Exception
+            Log("상품 소스 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    ' Target 조회
+    Private Sub SearchProductTarget()
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+
+        Try
+            ' TODO: 테이블명 확인 (T_ORDER_DETAIL_PRODUCT_INFO 등)
+            Dim searchName As String = txtProductTargetSearchName.Text.Trim()
+            Dim whereClause As String = String.Format("F_COMPANY_CODE = '{0}'", selCompanyCode)
+
+            If Not String.IsNullOrEmpty(searchName) Then
+                whereClause &= String.Format(" AND (F_MEM_NAME LIKE '%{0}%')", searchName)
+            End If
+
+            ' Count
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+
+            ' Paging
+            Dim offset As Integer = (_currentProductTargetPage - 1) * _productTargetPageSize
+            Dim query As String = String.Format("SELECT * FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE {0} ORDER BY F_IDX DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY",
+                                                whereClause, offset, _productTargetPageSize)
+
+            Dim dt As DataTable = _dbHelper.ExecuteQuery(query)
+            dgvProductTarget.DataSource = dt
+            grpProductTarget.Text = String.Format("New DB (Target) - 상품 이력 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentProductTargetPage)
+
+            RenderProductTargetPagination(totalRows)
+
+        Catch ex As Exception
+            Log("상품 타겟 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    ' 이관 버튼
+    Private Sub btnMigrateProduct_Click(sender As Object, e As EventArgs) Handles btnMigrateProduct.Click
+        If Not MigrationUtils.ValidateCompanySelection(cboCompany) Then Return
+        If Not MigrationUtils.ValidateDbSettings(_targetDbName, _sourceDbName) Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+
+        ' TODO: 테이블명 확인
+        Dim targetCount As Integer = 0
+        Try
+            Dim countQuery As String = String.Format("SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE F_COMPANY_CODE = '{0}'", selCompanyCode)
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then
+                targetCount = Convert.ToInt32(dtCount.Rows(0)(0))
+            End If
+        Catch ex As Exception
+            Log("데이터 확인 중 오류 발생: " & ex.Message)
+            Return
+        End Try
+
+        If Not MigrationUtils.AskMigrationConfirmation(targetCount, selCompanyName, "상품") Then Return
+
+        Log("=== 상품 이관 시작 ===")
+        If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+
+        Try
+            ' TODO: SP 파일명 확인
+            If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_MIG_OLD_TO_NEW_PRODUCT.sql"}, AddressOf Log) Then
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                Return
+            End If
+
+            Log(">>> 상품 통합 이관 프로시저 실행 중 (시간이 소요될 수 있습니다)...")
+            Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(String.Format("EXEC USP_MIG_OLD_TO_NEW_PRODUCT @P_CompanyCode='{0}', @OldDbName='{1}'", selCompanyCode, _sourceDbName))
+
+            If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                Dim res As String = result.Rows(0)(0).ToString()
+                Log("실행 결과: " & res)
+            End If
+
+            Log("=== 상품 이관 완료 ===")
+            btnProductTargetSearch.PerformClick()
+
+        Catch ex As Exception
+            Log("상품 이관 중 오류: " & ex.Message)
+        Finally
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+        End Try
+    End Sub
+
+    ' 초기화 버튼
+    Private Sub btnInitTargetProduct_Click(sender As Object, e As EventArgs) Handles btnInitTargetProduct.Click
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+
+        If MigrationUtils.AskDeleteConfirmation(selCompanyName, "상품") Then
+
+            Log("=== 상품 데이터 초기화 시작 ===")
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+
+            Try
+                ' TODO: SP 파일명 확인
+                If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_RESET_PRODUCT_MIGRATION.sql"}, AddressOf Log) Then
+                    If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                    Return
+                End If
+
+                Dim query As String = String.Format("EXEC USP_RESET_PRODUCT_MIGRATION @P_CompanyCode='{0}'", selCompanyCode)
+                Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(query)
+
+                If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                    Dim res As String = result.Rows(0)("Result").ToString()
+                    Dim msg As String = result.Rows(0)("Msg").ToString()
+                    Log(String.Format("결과: {0} ({1})", res, msg))
+                End If
+
+                Log("=== 상품 데이터 초기화 완료 ===")
+                btnProductTargetSearch.PerformClick()
+
+            Catch ex As Exception
+                Log("상품 초기화 중 오류: " & ex.Message)
+            Finally
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+            End Try
+        End If
+    End Sub
+
+    ' =============================================================
+    ' 일반시설(General) 이관 관련 코드 (템플릿: 상품 탭)
+    ' TODO: 테이블명 확인 필요
+    '   - Source DB: T_GeneralFacility 등
+    '   - Target DB: T_ORDER_DETAIL_GENERAL_FACILITY_INFO
+    ' TODO: SP 파일명
+    '   - 이관: USP_MIG_OLD_TO_NEW_GENERAL_FACILITY.sql
+    '   - 초기화: USP_RESET_GENERAL_FACILITY_MIGRATION.sql
+    ' =============================================================
+
+    Private Sub cboGeneralLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboGeneralLimit.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 50
+        If cboGeneralLimit.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboGeneralLimit.SelectedItem.ToString(), val) Then
+            _generalSourcePageSize = val
+        End If
+    End Sub
+
+    Private Sub cboGeneralLimitTarget_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboGeneralLimitTarget.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 100
+        If cboGeneralLimitTarget.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboGeneralLimitTarget.SelectedItem.ToString(), val) Then
+            _generalTargetPageSize = val
+        End If
+    End Sub
+
+    Private Sub LoadGeneralDongList()
+        MigrationUtils.LoadDongList(_sourceHelper, cboGeneralSourceDong, AddressOf Log)
+    End Sub
+
+    Private Sub cboGeneralSourceDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboGeneralSourceDong.SelectedIndexChanged
+        If _sourceHelper Is Nothing OrElse cboGeneralSourceDong.SelectedItem Is Nothing Then Return
+        Dim selectedDong As String = cboGeneralSourceDong.SelectedItem.ToString()
+        MigrationUtils.LoadHoList(_sourceHelper, selectedDong, cboGeneralSourceHo, AddressOf Log)
+    End Sub
+
+    Private Sub btnGeneralSourceSearch_Click(sender As Object, e As EventArgs) Handles btnGeneralSourceSearch.Click
+        _currentGeneralSourcePage = 1
+        SearchGeneralSource()
+    End Sub
+
+    Private Sub btnGeneralTargetSearch_Click(sender As Object, e As EventArgs) Handles btnGeneralTargetSearch.Click
+        _currentGeneralTargetPage = 1
+        SearchGeneralTarget()
+    End Sub
+
+    Private Sub btnGeneralLoadExcel_Click(sender As Object, e As EventArgs) Handles btnGeneralLoadExcel.Click
+        FrmMessage.ShowMsg("아직 구현되지 않았습니다. DB 조회를 이용해주세요.", "알림")
+    End Sub
+
+    Private Sub txtGeneralSourceSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtGeneralSourceSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnGeneralSourceSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub txtGeneralTargetSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtGeneralTargetSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnGeneralTargetSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub GeneralSourcePageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentGeneralSourcePage = Convert.ToInt32(btn.Tag)
+        btnGeneralSourceSearch.PerformClick()
+    End Sub
+
+    Private Sub GeneralTargetPageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentGeneralTargetPage = Convert.ToInt32(btn.Tag)
+        btnGeneralTargetSearch.PerformClick()
+    End Sub
+
+    Private Sub RenderGeneralSourcePagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlGeneralSourcePagination, totalRows, _generalSourcePageSize, _currentGeneralSourcePage, AddressOf GeneralSourcePageButton_Click)
+    End Sub
+
+    Private Sub RenderGeneralTargetPagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlGeneralTargetPagination, totalRows, _generalTargetPageSize, _currentGeneralTargetPage, AddressOf GeneralTargetPageButton_Click)
+    End Sub
+
+    Private Sub SearchGeneralSource()
+        If _sourceHelper Is Nothing Then Return
+        Try
+            Dim startDate As String = dtpGeneralStart.Value.ToString("yyyy-MM-dd")
+            Dim endDate As String = dtpGeneralEnd.Value.ToString("yyyy-MM-dd")
+            Dim searchName As String = txtGeneralSourceSearchName.Text.Trim()
+            Dim dong As String = If(cboGeneralSourceDong.SelectedItem IsNot Nothing, cboGeneralSourceDong.SelectedItem.ToString(), "전체")
+            Dim ho As String = If(cboGeneralSourceHo.SelectedItem IsNot Nothing, cboGeneralSourceHo.SelectedItem.ToString(), "전체")
+
+            Dim whereClause As String = String.Format("A.TrsDate BETWEEN '{0}' AND '{1}'", startDate, endDate)
+            If Not String.IsNullOrEmpty(searchName) Then whereClause &= String.Format(" AND (B.MbName LIKE '%{0}%')", searchName)
+            If dong <> "전체" Then whereClause &= String.Format(" AND B.DongAddr = '{0}'", dong)
+            If ho <> "전체" Then whereClause &= String.Format(" AND B.HoAddr = '{0}'", ho)
+
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount As DataTable = _sourceHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+
+            Dim offset As Integer = (_currentGeneralSourcePage - 1) * _generalSourcePageSize
+            Dim query As String = String.Format("SELECT A.*, B.DongAddr, B.HoAddr, B.MbName FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE {0} ORDER BY A.TrsDate DESC, A.TrsNo DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereClause, offset, _generalSourcePageSize)
+
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+            dgvGeneralSource.DataSource = dt
+            grpGeneralSource.Text = String.Format("Old DB (Source) - 일반시설내역 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentGeneralSourcePage)
+            RenderGeneralSourcePagination(totalRows)
+        Catch ex As Exception
+            Log("일반시설 소스 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub SearchGeneralTarget()
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Try
+            Dim searchName As String = txtGeneralTargetSearchName.Text.Trim()
+            Dim whereClause As String = String.Format("F_COMPANY_CODE = '{0}'", selCompanyCode)
+            If Not String.IsNullOrEmpty(searchName) Then whereClause &= String.Format(" AND (F_MEM_NAME LIKE '%{0}%')", searchName)
+
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+
+            Dim offset As Integer = (_currentGeneralTargetPage - 1) * _generalTargetPageSize
+            Dim query As String = String.Format("SELECT * FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE {0} ORDER BY F_IDX DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereClause, offset, _generalTargetPageSize)
+
+            Dim dt As DataTable = _dbHelper.ExecuteQuery(query)
+            dgvGeneralTarget.DataSource = dt
+            grpGeneralTarget.Text = String.Format("New DB (Target) - 일반시설 이력 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentGeneralTargetPage)
+            RenderGeneralTargetPagination(totalRows)
+        Catch ex As Exception
+            Log("일반시설 타겟 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub btnMigrateGeneral_Click(sender As Object, e As EventArgs) Handles btnMigrateGeneral.Click
+        If Not MigrationUtils.ValidateCompanySelection(cboCompany) Then Return
+        If Not MigrationUtils.ValidateDbSettings(_targetDbName, _sourceDbName) Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim targetCount As Integer = 0
+        Try
+            Dim countQuery As String = String.Format("SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE F_COMPANY_CODE = '{0}'", selCompanyCode)
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then targetCount = Convert.ToInt32(dtCount.Rows(0)(0))
+        Catch ex As Exception
+            Log("데이터 확인 중 오류 발생: " & ex.Message)
+            Return
+        End Try
+        If Not MigrationUtils.AskMigrationConfirmation(targetCount, selCompanyName, "일반시설") Then Return
+        Log("=== 일반시설 이관 시작 ===")
+        If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+        Try
+            If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_MIG_OLD_TO_NEW_GENERAL_FACILITY.sql"}, AddressOf Log) Then
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                Return
+            End If
+            Log(">>> 일반시설 통합 이관 프로시저 실행 중...")
+            Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(String.Format("EXEC USP_MIG_OLD_TO_NEW_GENERAL_FACILITY @P_CompanyCode='{0}', @OldDbName='{1}'", selCompanyCode, _sourceDbName))
+            If result IsNot Nothing AndAlso result.Rows.Count > 0 Then Log("실행 결과: " & result.Rows(0)(0).ToString())
+            Log("=== 일반시설 이관 완료 ===")
+            btnGeneralTargetSearch.PerformClick()
+        Catch ex As Exception
+            Log("일반시설 이관 중 오류: " & ex.Message)
+        Finally
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+        End Try
+    End Sub
+
+    Private Sub btnInitTargetGeneral_Click(sender As Object, e As EventArgs) Handles btnInitTargetGeneral.Click
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        If MigrationUtils.AskDeleteConfirmation(selCompanyName, "일반시설") Then
+            Log("=== 일반시설 데이터 초기화 시작 ===")
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+            Try
+                If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_RESET_GENERAL_FACILITY_MIGRATION.sql"}, AddressOf Log) Then
+                    If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                    Return
+                End If
+                Dim query As String = String.Format("EXEC USP_RESET_GENERAL_FACILITY_MIGRATION @P_CompanyCode='{0}'", selCompanyCode)
+                Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(query)
+                If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                    Log(String.Format("결과: {0} ({1})", result.Rows(0)("Result").ToString(), result.Rows(0)("Msg").ToString()))
+                End If
+                Log("=== 일반시설 데이터 초기화 완료 ===")
+                btnGeneralTargetSearch.PerformClick()
+            Catch ex As Exception
+                Log("일반시설 초기화 중 오류: " & ex.Message)
+            Finally
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+            End Try
+        End If
+    End Sub
+
+    ' =============================================================
+    ' 숙박시설(Accommodation) 이관 관련 코드
+    ' TODO: 테이블명 확인 필요
+    '   - Source DB: T_Accommodation 등
+    '   - Target DB: T_ORDER_DETAIL_ACCOMMODATION_INFO
+    ' TODO: SP 파일명
+    '   - 이관: USP_MIG_OLD_TO_NEW_ACCOMMODATION.sql
+    '   - 초기화: USP_RESET_ACCOMMODATION_MIGRATION.sql
+    ' =============================================================
+
+    Private Sub cboAccommodationLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboAccommodationLimit.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 50
+        If cboAccommodationLimit.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboAccommodationLimit.SelectedItem.ToString(), val) Then
+            _accommodationSourcePageSize = val
+        End If
+    End Sub
+
+    Private Sub cboAccommodationLimitTarget_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboAccommodationLimitTarget.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 100
+        If cboAccommodationLimitTarget.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboAccommodationLimitTarget.SelectedItem.ToString(), val) Then
+            _accommodationTargetPageSize = val
+        End If
+    End Sub
+
+    Private Sub LoadAccommodationDongList()
+        MigrationUtils.LoadDongList(_sourceHelper, cboAccommodationSourceDong, AddressOf Log)
+    End Sub
+
+    Private Sub cboAccommodationSourceDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboAccommodationSourceDong.SelectedIndexChanged
+        If _sourceHelper Is Nothing OrElse cboAccommodationSourceDong.SelectedItem Is Nothing Then Return
+        Dim selectedDong As String = cboAccommodationSourceDong.SelectedItem.ToString()
+        MigrationUtils.LoadHoList(_sourceHelper, selectedDong, cboAccommodationSourceHo, AddressOf Log)
+    End Sub
+
+    Private Sub btnAccommodationSourceSearch_Click(sender As Object, e As EventArgs) Handles btnAccommodationSourceSearch.Click
+        _currentAccommodationSourcePage = 1
+        SearchAccommodationSource()
+    End Sub
+
+    Private Sub btnAccommodationTargetSearch_Click(sender As Object, e As EventArgs) Handles btnAccommodationTargetSearch.Click
+        _currentAccommodationTargetPage = 1
+        SearchAccommodationTarget()
+    End Sub
+
+    Private Sub btnAccommodationLoadExcel_Click(sender As Object, e As EventArgs) Handles btnAccommodationLoadExcel.Click
+        FrmMessage.ShowMsg("아직 구현되지 않았습니다. DB 조회를 이용해주세요.", "알림")
+    End Sub
+
+    Private Sub txtAccommodationSourceSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtAccommodationSourceSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnAccommodationSourceSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub txtAccommodationTargetSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtAccommodationTargetSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnAccommodationTargetSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub AccommodationSourcePageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentAccommodationSourcePage = Convert.ToInt32(btn.Tag)
+        btnAccommodationSourceSearch.PerformClick()
+    End Sub
+
+    Private Sub AccommodationTargetPageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentAccommodationTargetPage = Convert.ToInt32(btn.Tag)
+        btnAccommodationTargetSearch.PerformClick()
+    End Sub
+
+    Private Sub RenderAccommodationSourcePagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlAccommodationSourcePagination, totalRows, _accommodationSourcePageSize, _currentAccommodationSourcePage, AddressOf AccommodationSourcePageButton_Click)
+    End Sub
+
+    Private Sub RenderAccommodationTargetPagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlAccommodationTargetPagination, totalRows, _accommodationTargetPageSize, _currentAccommodationTargetPage, AddressOf AccommodationTargetPageButton_Click)
+    End Sub
+
+    Private Sub SearchAccommodationSource()
+        If _sourceHelper Is Nothing Then Return
+        Try
+            Dim startDate As String = dtpAccommodationStart.Value.ToString("yyyy-MM-dd")
+            Dim endDate As String = dtpAccommodationEnd.Value.ToString("yyyy-MM-dd")
+            Dim searchName As String = txtAccommodationSourceSearchName.Text.Trim()
+            Dim dong As String = If(cboAccommodationSourceDong.SelectedItem IsNot Nothing, cboAccommodationSourceDong.SelectedItem.ToString(), "전체")
+            Dim ho As String = If(cboAccommodationSourceHo.SelectedItem IsNot Nothing, cboAccommodationSourceHo.SelectedItem.ToString(), "전체")
+
+            Dim whereClause As String = String.Format("A.TrsDate BETWEEN '{0}' AND '{1}'", startDate, endDate)
+            If Not String.IsNullOrEmpty(searchName) Then whereClause &= String.Format(" AND (B.MbName LIKE '%{0}%')", searchName)
+            If dong <> "전체" Then whereClause &= String.Format(" AND B.DongAddr = '{0}'", dong)
+            If ho <> "전체" Then whereClause &= String.Format(" AND B.HoAddr = '{0}'", ho)
+
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount As DataTable = _sourceHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+
+            Dim offset As Integer = (_currentAccommodationSourcePage - 1) * _accommodationSourcePageSize
+            Dim query As String = String.Format("SELECT A.*, B.DongAddr, B.HoAddr, B.MbName FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE {0} ORDER BY A.TrsDate DESC, A.TrsNo DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereClause, offset, _accommodationSourcePageSize)
+
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+            dgvAccommodationSource.DataSource = dt
+            grpAccommodationSource.Text = String.Format("Old DB (Source) - 숙박시설내역 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentAccommodationSourcePage)
+            RenderAccommodationSourcePagination(totalRows)
+        Catch ex As Exception
+            Log("숙박시설 소스 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub SearchAccommodationTarget()
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Try
+            Dim searchName As String = txtAccommodationTargetSearchName.Text.Trim()
+            Dim whereClause As String = String.Format("F_COMPANY_CODE = '{0}'", selCompanyCode)
+            If Not String.IsNullOrEmpty(searchName) Then whereClause &= String.Format(" AND (F_MEM_NAME LIKE '%{0}%')", searchName)
+
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+
+            Dim offset As Integer = (_currentAccommodationTargetPage - 1) * _accommodationTargetPageSize
+            Dim query As String = String.Format("SELECT * FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE {0} ORDER BY F_IDX DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereClause, offset, _accommodationTargetPageSize)
+
+            Dim dt As DataTable = _dbHelper.ExecuteQuery(query)
+            dgvAccommodationTarget.DataSource = dt
+            grpAccommodationTarget.Text = String.Format("New DB (Target) - 숙박시설 이력 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentAccommodationTargetPage)
+            RenderAccommodationTargetPagination(totalRows)
+        Catch ex As Exception
+            Log("숙박시설 타겟 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub btnMigrateAccommodation_Click(sender As Object, e As EventArgs) Handles btnMigrateAccommodation.Click
+        If Not MigrationUtils.ValidateCompanySelection(cboCompany) Then Return
+        If Not MigrationUtils.ValidateDbSettings(_targetDbName, _sourceDbName) Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim targetCount As Integer = 0
+        Try
+            Dim countQuery As String = String.Format("SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE F_COMPANY_CODE = '{0}'", selCompanyCode)
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then targetCount = Convert.ToInt32(dtCount.Rows(0)(0))
+        Catch ex As Exception
+            Log("데이터 확인 중 오류 발생: " & ex.Message)
+            Return
+        End Try
+        If Not MigrationUtils.AskMigrationConfirmation(targetCount, selCompanyName, "숙박시설") Then Return
+        Log("=== 숙박시설 이관 시작 ===")
+        If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+        Try
+            If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_MIG_OLD_TO_NEW_ACCOMMODATION.sql"}, AddressOf Log) Then
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                Return
+            End If
+            Log(">>> 숙박시설 통합 이관 프로시저 실행 중...")
+            Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(String.Format("EXEC USP_MIG_OLD_TO_NEW_ACCOMMODATION @P_CompanyCode='{0}', @OldDbName='{1}'", selCompanyCode, _sourceDbName))
+            If result IsNot Nothing AndAlso result.Rows.Count > 0 Then Log("실행 결과: " & result.Rows(0)(0).ToString())
+            Log("=== 숙박시설 이관 완료 ===")
+            btnAccommodationTargetSearch.PerformClick()
+        Catch ex As Exception
+            Log("숙박시설 이관 중 오류: " & ex.Message)
+        Finally
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+        End Try
+    End Sub
+
+    Private Sub btnInitTargetAccommodation_Click(sender As Object, e As EventArgs) Handles btnInitTargetAccommodation.Click
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        If MigrationUtils.AskDeleteConfirmation(selCompanyName, "숙박시설") Then
+            Log("=== 숙박시설 데이터 초기화 시작 ===")
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+            Try
+                If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_RESET_ACCOMMODATION_MIGRATION.sql"}, AddressOf Log) Then
+                    If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                    Return
+                End If
+                Dim query As String = String.Format("EXEC USP_RESET_ACCOMMODATION_MIGRATION @P_CompanyCode='{0}'", selCompanyCode)
+                Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(query)
+                If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                    Log(String.Format("결과: {0} ({1})", result.Rows(0)("Result").ToString(), result.Rows(0)("Msg").ToString()))
+                End If
+                Log("=== 숙박시설 데이터 초기화 완료 ===")
+                btnAccommodationTargetSearch.PerformClick()
+            Catch ex As Exception
+                Log("숙박시설 초기화 중 오류: " & ex.Message)
+            Finally
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+            End Try
+        End If
+    End Sub
+
+    ' =============================================================
+    ' 공간시설(Space) 이관 관련 코드
+    ' TODO: 테이블명 확인 필요
+    '   - Source DB: T_SpaceFacility 등
+    '   - Target DB: T_ORDER_DETAIL_SPACE_FACILITY_INFO
+    ' TODO: SP 파일명
+    '   - 이관: USP_MIG_OLD_TO_NEW_SPACE_FACILITY.sql
+    '   - 초기화: USP_RESET_SPACE_FACILITY_MIGRATION.sql
+    ' =============================================================
+
+    Private Sub cboSpaceLimit_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboSpaceLimit.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 50
+        If cboSpaceLimit.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboSpaceLimit.SelectedItem.ToString(), val) Then
+            _spaceSourcePageSize = val
+        End If
+    End Sub
+
+    Private Sub cboSpaceLimitTarget_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboSpaceLimitTarget.SelectedIndexChanged
+        If Not _isLoaded Then Return
+        Dim val As Integer = 100
+        If cboSpaceLimitTarget.SelectedItem IsNot Nothing AndAlso Integer.TryParse(cboSpaceLimitTarget.SelectedItem.ToString(), val) Then
+            _spaceTargetPageSize = val
+        End If
+    End Sub
+
+    Private Sub LoadSpaceDongList()
+        MigrationUtils.LoadDongList(_sourceHelper, cboSpaceSourceDong, AddressOf Log)
+    End Sub
+
+    Private Sub cboSpaceSourceDong_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboSpaceSourceDong.SelectedIndexChanged
+        If _sourceHelper Is Nothing OrElse cboSpaceSourceDong.SelectedItem Is Nothing Then Return
+        Dim selectedDong As String = cboSpaceSourceDong.SelectedItem.ToString()
+        MigrationUtils.LoadHoList(_sourceHelper, selectedDong, cboSpaceSourceHo, AddressOf Log)
+    End Sub
+
+    Private Sub btnSpaceSourceSearch_Click(sender As Object, e As EventArgs) Handles btnSpaceSourceSearch.Click
+        _currentSpaceSourcePage = 1
+        SearchSpaceSource()
+    End Sub
+
+    Private Sub btnSpaceTargetSearch_Click(sender As Object, e As EventArgs) Handles btnSpaceTargetSearch.Click
+        _currentSpaceTargetPage = 1
+        SearchSpaceTarget()
+    End Sub
+
+    Private Sub btnSpaceLoadExcel_Click(sender As Object, e As EventArgs) Handles btnSpaceLoadExcel.Click
+        FrmMessage.ShowMsg("아직 구현되지 않았습니다. DB 조회를 이용해주세요.", "알림")
+    End Sub
+
+    Private Sub txtSpaceSourceSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtSpaceSourceSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnSpaceSourceSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub txtSpaceTargetSearchName_KeyDown(sender As Object, e As KeyEventArgs) Handles txtSpaceTargetSearchName.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            e.SuppressKeyPress = True
+            btnSpaceTargetSearch.PerformClick()
+        End If
+    End Sub
+
+    Private Sub SpaceSourcePageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentSpaceSourcePage = Convert.ToInt32(btn.Tag)
+        btnSpaceSourceSearch.PerformClick()
+    End Sub
+
+    Private Sub SpaceTargetPageButton_Click(sender As Object, e As EventArgs)
+        Dim btn As ModernButton = DirectCast(sender, ModernButton)
+        _currentSpaceTargetPage = Convert.ToInt32(btn.Tag)
+        btnSpaceTargetSearch.PerformClick()
+    End Sub
+
+    Private Sub RenderSpaceSourcePagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlSpaceSourcePagination, totalRows, _spaceSourcePageSize, _currentSpaceSourcePage, AddressOf SpaceSourcePageButton_Click)
+    End Sub
+
+    Private Sub RenderSpaceTargetPagination(totalRows As Integer)
+        PaginationHelper.RenderPagination(pnlSpaceTargetPagination, totalRows, _spaceTargetPageSize, _currentSpaceTargetPage, AddressOf SpaceTargetPageButton_Click)
+    End Sub
+
+    Private Sub SearchSpaceSource()
+        If _sourceHelper Is Nothing Then Return
+        Try
+            Dim startDate As String = dtpSpaceStart.Value.ToString("yyyy-MM-dd")
+            Dim endDate As String = dtpSpaceEnd.Value.ToString("yyyy-MM-dd")
+            Dim searchName As String = txtSpaceSourceSearchName.Text.Trim()
+            Dim dong As String = If(cboSpaceSourceDong.SelectedItem IsNot Nothing, cboSpaceSourceDong.SelectedItem.ToString(), "전체")
+            Dim ho As String = If(cboSpaceSourceHo.SelectedItem IsNot Nothing, cboSpaceSourceHo.SelectedItem.ToString(), "전체")
+
+            Dim whereClause As String = String.Format("A.TrsDate BETWEEN '{0}' AND '{1}'", startDate, endDate)
+            If Not String.IsNullOrEmpty(searchName) Then whereClause &= String.Format(" AND (B.MbName LIKE '%{0}%')", searchName)
+            If dong <> "전체" Then whereClause &= String.Format(" AND B.DongAddr = '{0}'", dong)
+            If ho <> "전체" Then whereClause &= String.Format(" AND B.HoAddr = '{0}'", ho)
+
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount As DataTable = _sourceHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+
+            Dim offset As Integer = (_currentSpaceSourcePage - 1) * _spaceSourcePageSize
+            Dim query As String = String.Format("SELECT A.*, B.DongAddr, B.HoAddr, B.MbName FROM T_TrsInout A LEFT JOIN T_Member B ON A.MbNo = B.MbNo WHERE {0} ORDER BY A.TrsDate DESC, A.TrsNo DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereClause, offset, _spaceSourcePageSize)
+
+            Dim dt As DataTable = _sourceHelper.ExecuteQuery(query)
+            dgvSpaceSource.DataSource = dt
+            grpSpaceSource.Text = String.Format("Old DB (Source) - 공간시설내역 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentSpaceSourcePage)
+            RenderSpaceSourcePagination(totalRows)
+        Catch ex As Exception
+            Log("공간시설 소스 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub SearchSpaceTarget()
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Try
+            Dim searchName As String = txtSpaceTargetSearchName.Text.Trim()
+            Dim whereClause As String = String.Format("F_COMPANY_CODE = '{0}'", selCompanyCode)
+            If Not String.IsNullOrEmpty(searchName) Then whereClause &= String.Format(" AND (F_MEM_NAME LIKE '%{0}%')", searchName)
+
+            Dim countQuery As String = "SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE " & whereClause
+            Dim totalRows As Integer = 0
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then totalRows = Convert.ToInt32(dtCount.Rows(0)(0))
+
+            Dim offset As Integer = (_currentSpaceTargetPage - 1) * _spaceTargetPageSize
+            Dim query As String = String.Format("SELECT * FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE {0} ORDER BY F_IDX DESC OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY", whereClause, offset, _spaceTargetPageSize)
+
+            Dim dt As DataTable = _dbHelper.ExecuteQuery(query)
+            dgvSpaceTarget.DataSource = dt
+            grpSpaceTarget.Text = String.Format("New DB (Target) - 공간시설 이력 : 총 {0}건 (Page {1})", totalRows.ToString("N0"), _currentSpaceTargetPage)
+            RenderSpaceTargetPagination(totalRows)
+        Catch ex As Exception
+            Log("공간시설 타겟 조회 실패: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub btnMigrateSpace_Click(sender As Object, e As EventArgs) Handles btnMigrateSpace.Click
+        If Not MigrationUtils.ValidateCompanySelection(cboCompany) Then Return
+        If Not MigrationUtils.ValidateDbSettings(_targetDbName, _sourceDbName) Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim targetCount As Integer = 0
+        Try
+            Dim countQuery As String = String.Format("SELECT COUNT(*) FROM T_ORDER_DETAIL_GANGJWA_INFO WHERE F_COMPANY_CODE = '{0}'", selCompanyCode)
+            Dim dtCount = _dbHelper.ExecuteQuery(countQuery)
+            If dtCount.Rows.Count > 0 Then targetCount = Convert.ToInt32(dtCount.Rows(0)(0))
+        Catch ex As Exception
+            Log("데이터 확인 중 오류 발생: " & ex.Message)
+            Return
+        End Try
+        If Not MigrationUtils.AskMigrationConfirmation(targetCount, selCompanyName, "공간시설") Then Return
+        Log("=== 공간시설 이관 시작 ===")
+        If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+        Try
+            If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_MIG_OLD_TO_NEW_SPACE_FACILITY.sql"}, AddressOf Log) Then
+                If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                Return
+            End If
+            Log(">>> 공간시설 통합 이관 프로시저 실행 중...")
+            Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(String.Format("EXEC USP_MIG_OLD_TO_NEW_SPACE_FACILITY @P_CompanyCode='{0}', @OldDbName='{1}'", selCompanyCode, _sourceDbName))
+            If result IsNot Nothing AndAlso result.Rows.Count > 0 Then Log("실행 결과: " & result.Rows(0)(0).ToString())
+            Log("=== 공간시설 이관 완료 ===")
+            btnSpaceTargetSearch.PerformClick()
+        Catch ex As Exception
+            Log("공간시설 이관 중 오류: " & ex.Message)
+        Finally
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+        End Try
+    End Sub
+
+    Private Sub btnInitTargetSpace_Click(sender As Object, e As EventArgs) Handles btnInitTargetSpace.Click
+        If _dbHelper Is Nothing OrElse cboCompany.SelectedIndex < 0 Then Return
+        Dim drv = CType(cboCompany.SelectedItem, DataRowView)
+        Dim selCompanyName = drv("F_COMPANY_NAME").ToString()
+        Dim selCompanyCode = drv("F_COMPANY_CODE").ToString()
+        If MigrationUtils.AskDeleteConfirmation(selCompanyName, "공간시설") Then
+            Log("=== 공간시설 데이터 초기화 시작 ===")
+            If _loadingBar IsNot Nothing Then _loadingBar.Visible = True
+            Try
+                If Not MigrationUtils.DeploySpList(_dbHelper, {"USP_RESET_SPACE_FACILITY_MIGRATION.sql"}, AddressOf Log) Then
+                    If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
+                    Return
+                End If
+                Dim query As String = String.Format("EXEC USP_RESET_SPACE_FACILITY_MIGRATION @P_CompanyCode='{0}'", selCompanyCode)
+                Dim result As DataTable = _dbHelper.ExecuteSqlWithResultCheck(query)
+                If result IsNot Nothing AndAlso result.Rows.Count > 0 Then
+                    Log(String.Format("결과: {0} ({1})", result.Rows(0)("Result").ToString(), result.Rows(0)("Msg").ToString()))
+                End If
+                Log("=== 공간시설 데이터 초기화 완료 ===")
+                btnSpaceTargetSearch.PerformClick()
+            Catch ex As Exception
+                Log("공간시설 초기화 중 오류: " & ex.Message)
             Finally
                 If _loadingBar IsNot Nothing Then _loadingBar.Visible = False
             End Try

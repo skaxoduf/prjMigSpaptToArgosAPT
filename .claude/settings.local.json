@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s \"c:\\\\Project\\\\skaxoduf\\\\prjMigSpaptToArgosAPT\")",
+      "Bash(ls:*)",
+      "Bash(dotnet build:*)",
+      "Bash(findstr:*)"
+    ]
+  }
+}
