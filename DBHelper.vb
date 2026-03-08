@@ -211,7 +211,7 @@ Public Class DBHelper
                         If ex.Message.Contains("USE") Then
                             sbResult.AppendLine("Alert: USE statements ignored or failed (Proceeding).")
                         Else
-                            Throw ex
+                            Throw ' ex 대신 Throw만 사용해야 원래 스택 정보가 보존됨
                         End If
                     End Try
                 Next
@@ -225,4 +225,39 @@ Public Class DBHelper
 
         Return sbResult.ToString()
     End Function
+
+    ' DELETE/INSERT/UPDATE 같은 DML을 실행하고 영향받은 행수를 반환
+    ' ExecuteQuery(DataAdapter.Fill)로 DML 실행하던 잘못된 패턴 대체
+    Public Function ExecuteNonQuery(sql As String) As Integer
+        Using conn As New SqlConnection(_connectionString)
+            conn.Open()
+            Using cmd As New SqlCommand(sql, conn)
+                cmd.CommandTimeout = 120
+                Return cmd.ExecuteNonQuery()
+            End Using
+        End Using
+    End Function
+
+    ' 여러 DML SQL을 하나의 트랜잭션으로 묶어 실행
+    ' 중간에 오류 발생 시 전체 롤백하여 데이터 정합성 보장
+    Public Sub ExecuteNonQueryWithTransaction(sqlList As IEnumerable(Of String))
+        Using conn As New SqlConnection(_connectionString)
+            conn.Open()
+            Dim tran As SqlTransaction = conn.BeginTransaction()
+            Try
+                For Each sql As String In sqlList
+                    If String.IsNullOrWhiteSpace(sql) Then Continue For
+                    Using cmd As New SqlCommand(sql, conn, tran)
+                        cmd.CommandTimeout = 120
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Next
+                tran.Commit()
+            Catch ex As Exception
+                tran.Rollback()
+                Throw
+            End Try
+        End Using
+    End Sub
+
 End Class

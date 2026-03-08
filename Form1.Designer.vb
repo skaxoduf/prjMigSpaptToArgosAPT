@@ -288,18 +288,18 @@ Partial Class Form1
         rtbLog.BackColor = Color.FromArgb(CByte(36), CByte(40), CByte(59))
         rtbLog.BorderStyle = BorderStyle.None
         rtbLog.Dock = DockStyle.Bottom
-        rtbLog.Font = New Font("Consolas", 9.0F)
+        rtbLog.Font = New Font("Consolas", 9F)
         rtbLog.ForeColor = Color.FromArgb(CByte(192), CByte(202), CByte(245))
-        rtbLog.Location = New Point(0, 841)
+        rtbLog.Location = New Point(0, 1087)
         rtbLog.Name = "rtbLog"
-        rtbLog.Size = New Size(1280, 80)
+        rtbLog.Size = New Size(1770, 80)
         rtbLog.TabIndex = 3
         rtbLog.Text = ""
         ' 
         ' Label1
         ' 
         Label1.AutoSize = True
-        Label1.Font = New Font("Segoe UI", 9.0F)
+        Label1.Font = New Font("Segoe UI", 9F)
         Label1.ForeColor = Color.FromArgb(CByte(169), CByte(177), CByte(214))
         Label1.Location = New Point(624, 25)
         Label1.Name = "Label1"
@@ -312,7 +312,7 @@ Partial Class Form1
         cboCompany.BackColor = Color.FromArgb(CByte(36), CByte(40), CByte(59))
         cboCompany.DropDownStyle = ComboBoxStyle.DropDownList
         cboCompany.FlatStyle = FlatStyle.Flat
-        cboCompany.Font = New Font("Segoe UI", 10.0F)
+        cboCompany.Font = New Font("Segoe UI", 10F)
         cboCompany.ForeColor = Color.White
         cboCompany.FormattingEnabled = True
         cboCompany.Location = New Point(110, 22)
@@ -323,7 +323,7 @@ Partial Class Form1
         ' Label2
         ' 
         Label2.AutoSize = True
-        Label2.Font = New Font("Segoe UI", 11.0F, FontStyle.Bold)
+        Label2.Font = New Font("Segoe UI", 11F, FontStyle.Bold)
         Label2.ForeColor = Color.FromArgb(CByte(169), CByte(177), CByte(214))
         Label2.Location = New Point(20, 25)
         Label2.Name = "Label2"
@@ -341,7 +341,7 @@ Partial Class Form1
         pnlGlobalTop.Dock = DockStyle.Top
         pnlGlobalTop.Location = New Point(0, 0)
         pnlGlobalTop.Name = "pnlGlobalTop"
-        pnlGlobalTop.Size = New Size(1280, 70)
+        pnlGlobalTop.Size = New Size(1770, 70)
         pnlGlobalTop.TabIndex = 0
         ' 
         ' btnSetting
@@ -354,9 +354,9 @@ Partial Class Form1
         btnSetting.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnSetting.FlatAppearance.BorderSize = 0
         btnSetting.FlatStyle = FlatStyle.Flat
-        btnSetting.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnSetting.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnSetting.ForeColor = Color.White
-        btnSetting.Location = New Point(1150, 22)
+        btnSetting.Location = New Point(1640, 22)
         btnSetting.Name = "btnSetting"
         btnSetting.Size = New Size(100, 35)
         btnSetting.TabIndex = 6
@@ -375,7 +375,7 @@ Partial Class Form1
         btnMigrateMember.FlatStyle = FlatStyle.Flat
         btnMigrateMember.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold)
         btnMigrateMember.ForeColor = Color.White
-        btnMigrateMember.Location = New Point(566, 12)
+        btnMigrateMember.Location = New Point(811, 12)
         btnMigrateMember.Name = "btnMigrateMember"
         btnMigrateMember.Size = New Size(160, 35)
         btnMigrateMember.TabIndex = 5
@@ -394,7 +394,7 @@ Partial Class Form1
         btnLoadExcel.FlatStyle = FlatStyle.Flat
         btnLoadExcel.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold)
         btnLoadExcel.ForeColor = Color.White
-        btnLoadExcel.Location = New Point(531, 6)
+        btnLoadExcel.Location = New Point(776, 6)
         btnLoadExcel.Name = "btnLoadExcel"
         btnLoadExcel.Size = New Size(124, 27)
         btnLoadExcel.TabIndex = 7
@@ -415,7 +415,7 @@ Partial Class Form1
         tabMain.Name = "tabMain"
         tabMain.Padding = New Point(20, 6)
         tabMain.SelectedIndex = 0
-        tabMain.Size = New Size(1280, 771)
+        tabMain.Size = New Size(1770, 1017)
         tabMain.TabIndex = 1
         ' 
         ' tabMember
@@ -425,7 +425,7 @@ Partial Class Form1
         tabMember.Location = New Point(4, 30)
         tabMember.Name = "tabMember"
         tabMember.Padding = New Padding(3)
-        tabMember.Size = New Size(1272, 737)
+        tabMember.Size = New Size(1762, 983)
         tabMember.TabIndex = 0
         tabMember.Text = "회원정보 이관"
         ' 
@@ -444,8 +444,8 @@ Partial Class Form1
         ' splitContainerData.Panel2
         ' 
         splitContainerData.Panel2.Controls.Add(grpTarget)
-        splitContainerData.Size = New Size(1266, 731)
-        splitContainerData.SplitterDistance = 420
+        splitContainerData.Size = New Size(1756, 977)
+        splitContainerData.SplitterDistance = 561
         splitContainerData.TabIndex = 5
         ' 
         ' grpSource
@@ -457,7 +457,7 @@ Partial Class Form1
         grpSource.Location = New Point(0, 0)
         grpSource.Name = "grpSource"
         grpSource.Padding = New Padding(10)
-        grpSource.Size = New Size(1266, 360)
+        grpSource.Size = New Size(1756, 501)
         grpSource.TabIndex = 0
         grpSource.TabStop = False
         grpSource.Text = "Old DB (Source)"
@@ -469,17 +469,17 @@ Partial Class Form1
         dgvSource.Dock = DockStyle.Fill
         dgvSource.Location = New Point(10, 66)
         dgvSource.Name = "dgvSource"
-        dgvSource.Size = New Size(1246, 234)
+        dgvSource.Size = New Size(1736, 375)
         dgvSource.TabIndex = 2
         ' 
         ' pnlSourcePagination
         ' 
         pnlSourcePagination.BackColor = Color.Transparent
         pnlSourcePagination.Dock = DockStyle.Bottom
-        pnlSourcePagination.Location = New Point(10, 300)
+        pnlSourcePagination.Location = New Point(10, 441)
         pnlSourcePagination.Name = "pnlSourcePagination"
         pnlSourcePagination.Padding = New Padding(10)
-        pnlSourcePagination.Size = New Size(1246, 50)
+        pnlSourcePagination.Size = New Size(1736, 50)
         pnlSourcePagination.TabIndex = 3
         pnlSourcePagination.WrapContents = False
         ' 
@@ -494,7 +494,7 @@ Partial Class Form1
         pnlSourceSearch.Dock = DockStyle.Top
         pnlSourceSearch.Location = New Point(10, 26)
         pnlSourceSearch.Name = "pnlSourceSearch"
-        pnlSourceSearch.Size = New Size(1246, 40)
+        pnlSourceSearch.Size = New Size(1736, 40)
         pnlSourceSearch.TabIndex = 1
         ' 
         ' txtSourceSearchName
@@ -529,7 +529,7 @@ Partial Class Form1
         btnSourceSearch.CustomBorderColor = Color.Transparent
         btnSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnSourceSearch.FlatStyle = FlatStyle.Flat
-        btnSourceSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnSourceSearch.ForeColor = Color.White
         btnSourceSearch.Location = New Point(450, 6)
         btnSourceSearch.Name = "btnSourceSearch"
@@ -551,9 +551,9 @@ Partial Class Form1
         ' 
         pnlCenterAction.Controls.Add(btnMigrateMember)
         pnlCenterAction.Dock = DockStyle.Bottom
-        pnlCenterAction.Location = New Point(0, 360)
+        pnlCenterAction.Location = New Point(0, 501)
         pnlCenterAction.Name = "pnlCenterAction"
-        pnlCenterAction.Size = New Size(1266, 60)
+        pnlCenterAction.Size = New Size(1756, 60)
         pnlCenterAction.TabIndex = 1
         ' 
         ' grpTarget
@@ -565,7 +565,7 @@ Partial Class Form1
         grpTarget.Location = New Point(0, 0)
         grpTarget.Name = "grpTarget"
         grpTarget.Padding = New Padding(10)
-        grpTarget.Size = New Size(1266, 307)
+        grpTarget.Size = New Size(1756, 412)
         grpTarget.TabIndex = 0
         grpTarget.TabStop = False
         grpTarget.Text = "New DB (Target)"
@@ -577,17 +577,17 @@ Partial Class Form1
         dgvTarget.Dock = DockStyle.Fill
         dgvTarget.Location = New Point(10, 66)
         dgvTarget.Name = "dgvTarget"
-        dgvTarget.Size = New Size(1246, 181)
+        dgvTarget.Size = New Size(1736, 286)
         dgvTarget.TabIndex = 2
         ' 
         ' pnlTargetPagination
         ' 
         pnlTargetPagination.BackColor = Color.Transparent
         pnlTargetPagination.Dock = DockStyle.Bottom
-        pnlTargetPagination.Location = New Point(10, 247)
+        pnlTargetPagination.Location = New Point(10, 352)
         pnlTargetPagination.Name = "pnlTargetPagination"
         pnlTargetPagination.Padding = New Padding(10)
-        pnlTargetPagination.Size = New Size(1246, 50)
+        pnlTargetPagination.Size = New Size(1736, 50)
         pnlTargetPagination.TabIndex = 3
         pnlTargetPagination.WrapContents = False
         ' 
@@ -600,7 +600,7 @@ Partial Class Form1
         pnlTargetSearch.Dock = DockStyle.Top
         pnlTargetSearch.Location = New Point(10, 26)
         pnlTargetSearch.Name = "pnlTargetSearch"
-        pnlTargetSearch.Size = New Size(1246, 40)
+        pnlTargetSearch.Size = New Size(1736, 40)
         pnlTargetSearch.TabIndex = 1
         ' 
         ' txtTargetSearchName
@@ -619,7 +619,7 @@ Partial Class Form1
         btnTargetSearch.CustomBorderColor = Color.Transparent
         btnTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnTargetSearch.FlatStyle = FlatStyle.Flat
-        btnTargetSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnTargetSearch.ForeColor = Color.White
         btnTargetSearch.Location = New Point(115, 6)
         btnTargetSearch.Name = "btnTargetSearch"
@@ -646,9 +646,9 @@ Partial Class Form1
         btnInitTargetMember.CustomBorderColor = Color.Transparent
         btnInitTargetMember.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnInitTargetMember.FlatStyle = FlatStyle.Flat
-        btnInitTargetMember.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnInitTargetMember.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnInitTargetMember.ForeColor = Color.White
-        btnInitTargetMember.Location = New Point(1060, 6)
+        btnInitTargetMember.Location = New Point(1550, 6)
         btnInitTargetMember.Name = "btnInitTargetMember"
         btnInitTargetMember.Size = New Size(180, 27)
         btnInitTargetMember.TabIndex = 3
@@ -764,7 +764,7 @@ Partial Class Form1
         btnCourseSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnCourseSourceSearch.FlatAppearance.BorderSize = 0
         btnCourseSourceSearch.FlatStyle = FlatStyle.Flat
-        btnCourseSourceSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnCourseSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnCourseSourceSearch.ForeColor = Color.White
         btnCourseSourceSearch.Location = New Point(580, 6)
         btnCourseSourceSearch.Name = "btnCourseSourceSearch"
@@ -908,7 +908,7 @@ Partial Class Form1
         btnCourseTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnCourseTargetSearch.FlatAppearance.BorderSize = 0
         btnCourseTargetSearch.FlatStyle = FlatStyle.Flat
-        btnCourseTargetSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnCourseTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnCourseTargetSearch.ForeColor = Color.White
         btnCourseTargetSearch.Location = New Point(110, 6)
         btnCourseTargetSearch.Name = "btnCourseTargetSearch"
@@ -943,7 +943,7 @@ Partial Class Form1
         btnInitTargetCourse.CustomBorderColor = Color.Transparent
         btnInitTargetCourse.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnInitTargetCourse.FlatStyle = FlatStyle.Flat
-        btnInitTargetCourse.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnInitTargetCourse.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnInitTargetCourse.ForeColor = Color.White
         btnInitTargetCourse.Location = New Point(1060, 6)
         btnInitTargetCourse.Name = "btnInitTargetCourse"
@@ -1059,7 +1059,7 @@ Partial Class Form1
         btnLockerSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnLockerSourceSearch.FlatAppearance.BorderSize = 0
         btnLockerSourceSearch.FlatStyle = FlatStyle.Flat
-        btnLockerSourceSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnLockerSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnLockerSourceSearch.ForeColor = Color.White
         btnLockerSourceSearch.Location = New Point(355, 6)
         btnLockerSourceSearch.Name = "btnLockerSourceSearch"
@@ -1187,7 +1187,7 @@ Partial Class Form1
         btnLockerTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnLockerTargetSearch.FlatAppearance.BorderSize = 0
         btnLockerTargetSearch.FlatStyle = FlatStyle.Flat
-        btnLockerTargetSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnLockerTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnLockerTargetSearch.ForeColor = Color.White
         btnLockerTargetSearch.Location = New Point(110, 6)
         btnLockerTargetSearch.Name = "btnLockerTargetSearch"
@@ -1222,7 +1222,7 @@ Partial Class Form1
         btnInitTargetLocker.CustomBorderColor = Color.Transparent
         btnInitTargetLocker.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnInitTargetLocker.FlatStyle = FlatStyle.Flat
-        btnInitTargetLocker.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnInitTargetLocker.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnInitTargetLocker.ForeColor = Color.White
         btnInitTargetLocker.Location = New Point(1060, 6)
         btnInitTargetLocker.Name = "btnInitTargetLocker"
@@ -1339,7 +1339,7 @@ Partial Class Form1
         btnProductSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnProductSourceSearch.FlatAppearance.BorderSize = 0
         btnProductSourceSearch.FlatStyle = FlatStyle.Flat
-        btnProductSourceSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnProductSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnProductSourceSearch.ForeColor = Color.White
         btnProductSourceSearch.Location = New Point(580, 6)
         btnProductSourceSearch.Name = "btnProductSourceSearch"
@@ -1483,7 +1483,7 @@ Partial Class Form1
         btnProductTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnProductTargetSearch.FlatAppearance.BorderSize = 0
         btnProductTargetSearch.FlatStyle = FlatStyle.Flat
-        btnProductTargetSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnProductTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnProductTargetSearch.ForeColor = Color.White
         btnProductTargetSearch.Location = New Point(110, 6)
         btnProductTargetSearch.Name = "btnProductTargetSearch"
@@ -1518,7 +1518,7 @@ Partial Class Form1
         btnInitTargetProduct.CustomBorderColor = Color.Transparent
         btnInitTargetProduct.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnInitTargetProduct.FlatStyle = FlatStyle.Flat
-        btnInitTargetProduct.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnInitTargetProduct.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnInitTargetProduct.ForeColor = Color.White
         btnInitTargetProduct.Location = New Point(2112, 6)
         btnInitTargetProduct.Name = "btnInitTargetProduct"
@@ -1635,7 +1635,7 @@ Partial Class Form1
         btnGeneralSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnGeneralSourceSearch.FlatAppearance.BorderSize = 0
         btnGeneralSourceSearch.FlatStyle = FlatStyle.Flat
-        btnGeneralSourceSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnGeneralSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnGeneralSourceSearch.ForeColor = Color.White
         btnGeneralSourceSearch.Location = New Point(580, 6)
         btnGeneralSourceSearch.Name = "btnGeneralSourceSearch"
@@ -1779,7 +1779,7 @@ Partial Class Form1
         btnGeneralTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnGeneralTargetSearch.FlatAppearance.BorderSize = 0
         btnGeneralTargetSearch.FlatStyle = FlatStyle.Flat
-        btnGeneralTargetSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnGeneralTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnGeneralTargetSearch.ForeColor = Color.White
         btnGeneralTargetSearch.Location = New Point(110, 6)
         btnGeneralTargetSearch.Name = "btnGeneralTargetSearch"
@@ -1814,7 +1814,7 @@ Partial Class Form1
         btnInitTargetGeneral.CustomBorderColor = Color.Transparent
         btnInitTargetGeneral.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnInitTargetGeneral.FlatStyle = FlatStyle.Flat
-        btnInitTargetGeneral.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnInitTargetGeneral.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnInitTargetGeneral.ForeColor = Color.White
         btnInitTargetGeneral.Location = New Point(2112, 6)
         btnInitTargetGeneral.Name = "btnInitTargetGeneral"
@@ -1931,7 +1931,7 @@ Partial Class Form1
         btnAccommodationSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnAccommodationSourceSearch.FlatAppearance.BorderSize = 0
         btnAccommodationSourceSearch.FlatStyle = FlatStyle.Flat
-        btnAccommodationSourceSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnAccommodationSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnAccommodationSourceSearch.ForeColor = Color.White
         btnAccommodationSourceSearch.Location = New Point(580, 6)
         btnAccommodationSourceSearch.Name = "btnAccommodationSourceSearch"
@@ -2075,7 +2075,7 @@ Partial Class Form1
         btnAccommodationTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnAccommodationTargetSearch.FlatAppearance.BorderSize = 0
         btnAccommodationTargetSearch.FlatStyle = FlatStyle.Flat
-        btnAccommodationTargetSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnAccommodationTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnAccommodationTargetSearch.ForeColor = Color.White
         btnAccommodationTargetSearch.Location = New Point(110, 6)
         btnAccommodationTargetSearch.Name = "btnAccommodationTargetSearch"
@@ -2110,7 +2110,7 @@ Partial Class Form1
         btnInitTargetAccommodation.CustomBorderColor = Color.Transparent
         btnInitTargetAccommodation.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnInitTargetAccommodation.FlatStyle = FlatStyle.Flat
-        btnInitTargetAccommodation.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnInitTargetAccommodation.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnInitTargetAccommodation.ForeColor = Color.White
         btnInitTargetAccommodation.Location = New Point(2112, 6)
         btnInitTargetAccommodation.Name = "btnInitTargetAccommodation"
@@ -2227,7 +2227,7 @@ Partial Class Form1
         btnSpaceSourceSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnSpaceSourceSearch.FlatAppearance.BorderSize = 0
         btnSpaceSourceSearch.FlatStyle = FlatStyle.Flat
-        btnSpaceSourceSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnSpaceSourceSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnSpaceSourceSearch.ForeColor = Color.White
         btnSpaceSourceSearch.Location = New Point(580, 6)
         btnSpaceSourceSearch.Name = "btnSpaceSourceSearch"
@@ -2371,7 +2371,7 @@ Partial Class Form1
         btnSpaceTargetSearch.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnSpaceTargetSearch.FlatAppearance.BorderSize = 0
         btnSpaceTargetSearch.FlatStyle = FlatStyle.Flat
-        btnSpaceTargetSearch.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnSpaceTargetSearch.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnSpaceTargetSearch.ForeColor = Color.White
         btnSpaceTargetSearch.Location = New Point(110, 6)
         btnSpaceTargetSearch.Name = "btnSpaceTargetSearch"
@@ -2406,7 +2406,7 @@ Partial Class Form1
         btnInitTargetSpace.CustomBorderColor = Color.Transparent
         btnInitTargetSpace.CustomHoverColor = Color.FromArgb(CByte(86), CByte(95), CByte(137))
         btnInitTargetSpace.FlatStyle = FlatStyle.Flat
-        btnInitTargetSpace.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        btnInitTargetSpace.Font = New Font("Segoe UI", 10F, FontStyle.Bold)
         btnInitTargetSpace.ForeColor = Color.White
         btnInitTargetSpace.Location = New Point(2112, 6)
         btnInitTargetSpace.Name = "btnInitTargetSpace"
@@ -2429,15 +2429,15 @@ Partial Class Form1
         ' 
         ' Form1
         ' 
-        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         BackColor = Color.FromArgb(CByte(26), CByte(27), CByte(38))
-        ClientSize = New Size(1280, 921)
+        ClientSize = New Size(1770, 1167)
         Controls.Add(tabMain)
         Controls.Add(picPreview)
         Controls.Add(rtbLog)
         Controls.Add(pnlGlobalTop)
-        Font = New Font("Segoe UI", 9.0F)
+        Font = New Font("Segoe UI", 9F)
         ForeColor = Color.FromArgb(CByte(169), CByte(177), CByte(214))
         Name = "Form1"
         StartPosition = FormStartPosition.CenterScreen
